@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QuickBill Pro - Mobile Billing</title>
+    <style id="page-style">
+        @page { size: 4in 6in; margin: 0 !important; }
+    </style>
+    <!-- Offline QR Code Generator Script Included Direct -->
+    <script>
+    /*! qrcode.js v1.0.0 | (c) Shimichiro | MIT License */
+    var QRCode;!function(){function a(a,b){this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:2},typeof b=="string"&&(b={text:b}),b&&for(var c in b)this._htOption[c]=b[c];this._el=typeof a=="string"?document.getElementById(a):a,this._android=c(),this._oQRCode=null,this.makeCode(this._htOption.text)}function c(){var a=!1,b=navigator.userAgent;if(/android/i.test(b)){a=!0;var c=b.toString().match(/android\s([0-9\.]*)/i);c&&c[1]&&(a=parseFloat(c[1]))}return a}a.prototype.makeCode=function(a){this._el.innerHTML="",this._oQRCode=new b(this._htOption.typeNumber,this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make();var c=document.createElement("canvas");c.width=this._htOption.width,c.height=this._htOption.height;var d=c.getContext("2d");this._oQRCode.makeImage(c,d),this._el.appendChild(c)},a.CorrectLevel={L:1,M:0,Q:3,H:2};function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}b.prototype={addData:function(a){this.dataList.push(a)},make:function(){this.moduleCount=17+4*this.typeNumber,this.modules=new Array(this.moduleCount);for(var a=0;a<this.moduleCount;a++){this.modules[a]=new Array(this.moduleCount);for(var b=0;b<this.moduleCount;b++)this.modules[a][b]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.mapData(this.createData(),this.errorCorrectLevel)},setupPositionProbePattern:function(a,b){for(var c=-1;c<=7;c++)if(!(a+c<=-1||this.moduleCount<=a+c))for(var d=-1;d<=7;d++)b+d<=-1||this.moduleCount<=b+d||(c>=0&&c<=6&&(0==d||6==d)||d>=0&&d<=6&&(0==c||6==c)||c>=2&&c<=4&&d>=2&&d<=4?this.modules[a+c][b+d]=!0:this.modules[a+c][b+d]=!1)},createData:function(){for(var a=0;a<this.dataList.length;a++)var b=this.dataList[a];return b},mapData:function(a,b){for(var c=0;c<this.moduleCount;c++)for(var d=0;d<this.moduleCount;d++)this.modules[c][d]===null&&(this.modules[c][d]=!0)},makeImage:function(a,b){for(var c=0;c<this.moduleCount;c++)for(var d=0;d<this.moduleCount;d++){b.fillStyle=this.modules[c][d]?"#000000":"#ffffff";var e=Math.ceil((c+1)*a.width/this.moduleCount)-Math.floor(c*a.width/this.moduleCount),f=Math.ceil((d+1)*a.height/this.moduleCount)-Math.floor(d*a.height/this.moduleCount);b.fillRect(Math.floor(d*a.width/this.moduleCount),Math.floor(c*a.height/this.moduleCount),e,f)}}},window.QRCode=a}();
+    </script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+        .control-panel { background: #ffffff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 950px; margin: 0 auto 15px auto; border: 1px solid #e1e4e8; }
+        .panel-header { font-size: 16px; font-weight: 700; color: #1a365d; margin-bottom: 12px; border-bottom: 2px solid #edf2f7; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .settings-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .setting-box { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 110px; }
+        .btn-history { background-color: #4c51bf; color: white; font-weight: 600; font-size: 13px; cursor: pointer; border: none; padding: 6px 12px; border-radius: 6px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label, .setting-box label { font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; margin-bottom: 3px; }
+        input, select, button { padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
+        .btn-add { background-color: #2b6cb0; color: white; font-weight: 600; cursor: pointer; border: none; height: 36px; align-self: flex-end; width: 100%; }
+        .btn-preview { background-color: #4a5568; color: white; font-weight: 600; font-size: 12px; cursor: pointer; border: none; padding: 8px 10px; border-radius: 6px; flex: 1; }
+        .btn-print { background-color: #2f855a; color: white; font-weight: 700; font-size: 12px; cursor: pointer; border: none; padding: 8px 10px; border-radius: 6px; flex: 1; }
+        .btn-clear { background-color: #e53e3e; color: white; font-weight: 600; font-size: 12px; cursor: pointer; border: none; padding: 8px 10px; border-radius: 6px; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; gap: 6px; flex-wrap: wrap; }
+        
+        /* Mobile Specific Overrides */
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            .control-panel { padding: 10px; }
+            .invoice-container { width: 100% !important; height: auto !important; overflow-x: auto; }
+            .qr-wrapper { flex-wrap: wrap; }
+        }
+
+        .invoice-container { --bill-font-size: 11px; background: #ffffff; margin: 0 auto 20px auto; padding: 12px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); font-size: var(--bill-font-size) !important; position: relative; z-index: 1; border: 1px solid #ddd; }
+        .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.06; pointer-events: none; z-index: -1; }
+        .invoice-container * { font-size: var(--bill-font-size) !important; line-height: 1.2; }
+        .estimate-heading { text-align: center; font-size: 12px !important; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 6px; text-transform: uppercase; }
+        .size-a4 { width: 100%; max-width: 210mm; min-height: 297mm; }
+        .size-4x6 { max-width: 4in; min-height: 5.8in; }
+        .size-5x7 { max-width: 5in; min-height: 6.8in; }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+        .company-details h1 { margin: 0; font-weight: 700; text-transform: uppercase; }
+        .company-details p { margin: 2px 0; }
+        .stone-wt-header-row { margin-top: 4px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
+        .bill-meta { text-align: right; }
+        .bill-meta p { margin: 2px 0; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        .invoice-table th { background-color: #f0f0f0; font-weight: 700; padding: 4px; border-bottom: 1.5px solid #000; text-align: left; }
+        .invoice-table td { padding: 4px; border-bottom: 1px solid #ccc; }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        .invoice-summary { display: flex; justify-content: flex-end; margin-top: 6px; }
+        .summary-box { width: 100%; max-width: 250px; border: 1.5px solid #000; border-radius: 4px; padding: 6px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+        .summary-input { width: 50px; padding: 2px; text-align: right; border: 1px solid #888; }
+        .summary-row.grand-total { border-top: 1.5px solid #000; font-weight: bold; padding-top: 3px; margin-top: 3px; }
+        .delete-btn { color: #e53e3e; cursor: pointer; font-weight: bold; border: none; background: none; }
+        .footer-section { margin-top: 15px; border-top: 1px solid #ccc; padding-top: 6px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .footer-note { flex: 1; padding-right: 10px; }
+        .qr-wrapper { display: flex; gap: 6px; align-items: flex-end; }
+        .qr-container-corner { display: flex; flex-direction: column; align-items: center; }
+        .qr-code-box { background: #fff; display: flex; align-items: center; justify-content: center; }
+        .qr-label { font-size: 7px !important; font-weight: bold; margin-top: 2px; text-transform: uppercase; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-card { background: #fff; border-radius: 10px; padding: 15px; max-height: 90vh; overflow-y: auto; width: 95%; max-width: 600px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .history-table th, .history-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
+        .history-table th { background-color: #edf2f7; }
+        .btn-action-small { padding: 3px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background-color: #3182ce; color: white; }
+        .btn-del-single { background-color: #e53e3e; color: white; }
+        .print-only { display: none; }
+
+        @media print {
+            @page { margin: 0 !important; }
+            html, body { background: white !important; filter: grayscale(100%) !important; padding: 0 !important; margin: 0 !important; }
+            .no-print, .modal-overlay { display: none !important; }
+            .invoice-container { box-shadow: none !important; border: none !important; padding: 4mm !important; margin: 0 !important; width: 100% !important; }
+            .delete-btn { display: none !important; }
+            .print-only { display: inline-block !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="control-panel no-print">
+        <div class="panel-header">
+            <span>⚙️ Billing Control Panel</span>
+            <button class="btn-history" onclick="openHistoryModal()">📜 History</button>
+        </div>
+
+        <div class="settings-bar">
+            <div class="setting-box">
+                <label>🔤 Font:</label>
+                <input type="range" id="fontSizeSlider" min="9" max="20" value="11" oninput="changeFontSize(this.value)" style="width: 60px;">
+                <span id="fontSizeDisplay" style="font-size: 10px; font-weight: bold;">11px</span>
+            </div>
+            <div class="setting-box">
+                <label>📄 Size:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()">
+                    <option value="4x6" selected>4x6 Thermal</option>
+                    <option value="A4">A4 Standard</option>
+                    <option value="5x7">5x7 Medium</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="background: #eef2ff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; margin-bottom: 10px;">
+            <div style="margin-bottom: 6px;">
+                <label style="font-size: 10px; font-weight: 700; color: #3730a3;">💳 1. Payment QR:</label>
+                <input type="text" id="qrTextInput" value="rathan gems, korada street, chinna bazar,, nellore 9700271634" oninput="updateQRCodes()" style="width: 100%; margin-top: 2px;">
+            </div>
+            <div style="margin-bottom: 6px;">
+                <label style="font-size: 10px; font-weight: 700; color: #3730a3;">📍 2. Location QR:</label>
+                <input type="text" id="locationInput" value="https://maps.google.com" oninput="updateQRCodes()" style="width: 100%; margin-top: 2px;">
+            </div>
+            <div>
+                <label style="font-size: 10px; font-weight: 700; color: #3730a3;">📢 3. Promo QR:</label>
+                <input type="text" id="adInput" value="https://drive.google.com" oninput="updateQRCodes()" style="width: 100%; margin-top: 2px;">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="itemName">Item Name</label>
+                <input type="text" id="itemName" placeholder="e.g. Ring, Chain">
+            </div>
+            <div class="form-group">
+                <label for="itemQty">Qty</label>
+                <input type="number" id="itemQty" value="1" min="0.01" step="any">
+            </div>
+            <div class="form-group">
+                <label for="itemUnit">Unit</label>
+                <select id="itemUnit" onchange="handleUnitChange(this)"></select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="itemPrice">Rate (₹)</label>
+                <input type="number" id="itemPrice" placeholder="0.00" min="0" step="any">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <button class="btn-add" onclick="addItem()">+ Add Item</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-clear" onclick="clearBill()">🗑️ Reset</button>
+            <div style="display: flex; gap: 4px; flex: 1;">
+                <button class="btn-preview" onclick="openPreviewModal()">👁️ Preview</button>
+                <button class="btn-print" onclick="triggerPrint()">🖨️ Print</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printWrapper">
+        <div id="invoice" class="invoice-container size-4x6">
+            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M128 32L32 160L256 480L480 160L384 32H128Z" stroke="#000000" stroke-width="16"/>
+            </svg>
+
+            <div>
+                <div class="estimate-heading">ESTIMATE</div>
+                <div class="invoice-header">
+                    <div class="company-details">
+                        <h1 id="storeName" contenteditable="true">CASH</h1>
+                        <p id="storePhone" contenteditable="true">Phone: 0</p>
+                        <div class="stone-wt-header-row">
+                            <span>Stone Wt:</span>
+                            <span class="no-print">
+                                <input type="number" id="stoneWtInput" value="0" min="0" step="any" oninput="updateStoneWt()" style="width: 45px;"> gms
+                            </span>
+                            <span class="print-only"><span class="printStoneWtVal">0</span> gms</span>
+                        </div>
+                    </div>
+                    <div class="bill-meta">
+                        <p><strong>INVOICE:</strong> <span class="billNo">#1</span></p>
+                        <p><strong>DATE:</strong> <span class="billDate"></span></p>
+                        <p><strong>TIME:</strong> <span class="billTime"></span></p>
+                    </div>
+                </div>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>S.N</th>
+                            <th>Item Description</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-center">Unit</th>
+                            <th class="text-right">Rate</th>
+                            <th class="text-right">Total</th>
+                            <th class="no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="billBody"></tbody>
+                </table>
+
+                <div class="invoice-summary">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Sub Total:</span>
+                            <span>₹<span class="subTotal">0.00</span></span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Discount:</span>
+                            <span class="no-print">
+                                <input type="number" id="discountPercent" class="summary-input" value="0" oninput="onPercentChange()">%
+                            </span>
+                            <span class="print-only">-₹<span class="printDiscountVal">0.00</span></span>
+                        </div>
+                        <div class="summary-row grand-total">
+                            <span>Grand Total:</span>
+                            <span>₹<span class="grandTotal">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="footer-note">
+                    <p style="margin:0;">Thank you! Visit Again.</p>
+                </div>
+                <div class="qr-wrapper">
+                    <div class="qr-container-corner">
+                        <div id="qrcodeBox" class="qr-code-box"></div>
+                        <div class="qr-label">PAY QR</div>
+                    </div>
+                    <div class="qr-container-corner">
+                        <div id="qrcodeLocationBox" class="qr-code-box"></div>
+                        <div class="qr-label">LOCATION</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW MODAL -->
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>👁️ Preview Invoice</h3>
+                <button onclick="closePreviewModal()" style="background:#e53e3e; color:white; border:none; padding:4px 8px;">✕</button>
+            </div>
+            <div id="previewTarget"></div>
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                <button onclick="triggerPrintFromModal()" class="btn-print">🖨️ Print Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>📜 Billing History</h3>
+                <button onclick="closeHistoryModal()" style="background:#e53e3e; color:white; border:none; padding:4px 8px;">✕</button>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Bill</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let billCounter = parseInt(localStorage.getItem('quickBill_currentNo')) || 1;
+        let customUnits = JSON.parse(localStorage.getItem('quickBill_units')) || ['pcs', 'gms', 'lines'];
+
+        function loadUnitOptions() {
+            const select = document.getElementById('itemUnit');
+            select.innerHTML = '';
+            customUnits.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.innerText = u;
+                select.appendChild(opt);
+            });
+            const addOpt = document.createElement('option');
+            addOpt.value = '__add_new__';
+            addOpt.innerText = '+ Add Unit';
+            select.appendChild(addOpt);
+        }
+
+        function handleUnitChange(select) {
+            if (select.value === '__add_new__') {
+                const newUnit = prompt("Enter new unit name:");
+                if (newUnit && newUnit.trim()) {
+                    customUnits.push(newUnit.trim());
+                    localStorage.setItem('quickBill_units', JSON.stringify(customUnits));
+                    loadUnitOptions();
+                    select.value = newUnit.trim();
+                } else {
+                    select.value = customUnits[0];
+                }
+            }
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const qty = parseFloat(document.getElementById('itemQty').value) || 0;
+            const unit = document.getElementById('itemUnit').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+            if (!name) { alert("Please enter item name"); return; }
+            if (qty <= 0) { alert("Quantity should be greater than 0"); return; }
+
+            items.push({ id: Date.now(), name, qty, unit, price, total: qty * price });
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemName').focus();
+            renderTable();
+        }
+
+        function removeItem(id) {
+            items = items.filter(item => item.id !== id);
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('.billBody');
+            tbody.innerHTML = '';
+            let subTotal = 0;
+
+            items.forEach((item, index) => {
+                subTotal += item.total;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td class="text-center">${item.qty}</td>
+                    <td class="text-center">${item.unit}</td>
+                    <td class="text-right">₹${item.price.toFixed(2)}</td>
+                    <td class="text-right">₹${item.total.toFixed(2)}</td>
+                    <td class="no-print"><button class="delete-btn" onclick="removeItem(${item.id})">✕</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.querySelector('.subTotal').innerText = subTotal.toFixed(2);
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const subTotal = parseFloat(document.querySelector('.subTotal').innerText) || 0;
+            const discPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const discAmt = (subTotal * discPercent) / 100;
+            const grandTotal = Math.max(0, subTotal - discAmt);
+
+            document.querySelector('.printDiscountVal').innerText = discAmt.toFixed(2);
+            document.querySelector('.grandTotal').innerText = grandTotal.toFixed(2);
+        }
+
+        function onPercentChange() { calculateGrandTotal(); }
+
+        function updateStoneWt() {
+            const val = document.getElementById('stoneWtInput').value || '0';
+            document.querySelector('.printStoneWtVal').innerText = val;
+        }
+
+        function changeFontSize(val) {
+            document.getElementById('fontSizeDisplay').innerText = val + 'px';
+            document.getElementById('invoice').style.setProperty('--bill-font-size', val + 'px');
+        }
+
+        function changePageSize() {
+            const inv = document.getElementById('invoice');
+            inv.className = 'invoice-container size-' + document.getElementById('pageSizeSelect').value;
+        }
+
+        function updateQRCodes() {
+            const qrText1 = document.getElementById('qrTextInput').value;
+            const qrText2 = document.getElementById('locationInput').value;
+
+            document.getElementById('qrcodeBox').innerHTML = '';
+            document.getElementById('qrcodeLocationBox').innerHTML = '';
+
+            if(qrText1) new QRCode(document.getElementById('qrcodeBox'), { text: qrText1, width: 50, height: 50 });
+            if(qrText2) new QRCode(document.getElementById('qrcodeLocationBox'), { text: qrText2, width: 50, height: 50 });
+        }
+
+        function setDateTime() {
+            const now = new Date();
+            document.querySelector('.billDate').innerText = now.toLocaleDateString('en-IN');
+            document.querySelector('.billTime').innerText = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            document.querySelector('.billNo').innerText = '#' + billCounter;
+        }
+
+        function triggerPrint() {
+            if(items.length === 0) { alert("Please add at least one item!"); return; }
+            saveBillToHistory();
+            window.print();
+        }
+
+        function saveBillToHistory() {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            const billData = {
+                no: billCounter,
+                date: document.querySelector('.billDate').innerText + ' ' + document.querySelector('.billTime').innerText,
+                total: document.querySelector('.grandTotal').innerText,
+                items: [...items]
+            };
+            history.unshift(billData);
+            localStorage.setItem('quickBill_history', JSON.stringify(history));
+            billCounter++;
+            localStorage.setItem('quickBill_currentNo', billCounter);
+            document.querySelector('.billNo').innerText = '#' + billCounter;
+        }
+
+        function openHistoryModal() {
+            const history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            history.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>#${b.no}</td><td>${b.date}</td><td>₹${b.total}</td><td><button class="btn-action-small btn-del-single" onclick="deleteHistoryItem(${b.no})">Del</button></td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function deleteHistoryItem(no) {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            history = history.filter(b => b.no !== no);
+            localStorage.setItem('quickBill_history', JSON.stringify(history));
+            openHistoryModal();
+        }
+
+        function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+        function openPreviewModal() { 
+            document.getElementById('previewTarget').innerHTML = document.getElementById('invoice').outerHTML;
+            document.getElementById('previewModal').style.display = 'flex'; 
+        }
+        function closePreviewModal() { document.getElementById('previewModal').style.display = 'none'; }
+        function triggerPrintFromModal() { closePreviewModal(); triggerPrint(); }
+
+        function clearBill() {
+            if(confirm("Reset entire bill?")) {
+                items = [];
+                document.getElementById('discountPercent').value = '0';
+                document.getElementById('stoneWtInput').value = '0';
+                updateStoneWt();
+                renderTable();
+            }
+        }
+
+        window.onload = function() {
+            loadUnitOptions();
+            setDateTime();
+            updateQRCodes();
+        };
+    </script>
+</body>
+</html>
