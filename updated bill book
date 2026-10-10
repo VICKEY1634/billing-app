@@ -620,46 +620,4 @@
         <div id="invoice" class="invoice-container size-4x6">
             
             <!-- Diamond Graphic Watermark SVG -->
-            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M128 32L32 160L256 480L480 160L384 32H128Z" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M32 160H480" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M128 32L192 160L256 480L320 160L384 32" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M192 160H320" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M256 32V160" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
-            </svg>
-
-            <div>
-                <div class="estimate-heading">ESTIMATE</div>
-
-                <div class="invoice-header">
-                    <div class="company-details">
-                        <h1 id="storeName" contenteditable="true" title="Click to edit shop name">CASH</h1>
-                        <p id="storePhone" contenteditable="true" title="Click to edit phone">Phone: 0</p>
-                        
-                        <!-- Stone Weight Row (Hidden automatically if 0) -->
-                        <div class="stone-wt-header-row stoneWtRow" id="stoneWtRowContainer">
-                            <span>Total Stone Wt:</span>
-                            <div class="no-print" style="display: inline-flex; align-items: center; gap: 4px;">
-                                <input type="number" id="stoneWtInput" class="summary-input" value="0" min="0" step="any" oninput="updateStoneWt()" placeholder="0" style="width: 55px; padding: 1px 3px;"> grams
-                            </div>
-                            <span class="print-only">
-                                <span class="printStoneWtVal">0</span> grams
-                            </span>
-                        </div>
-                    </div>
-                    <div class="bill-meta">
-                        <p><strong>INVOICE NO:</strong> <span class="billNo">#1</span></p>
-                        <p><strong>DATE:</strong> <span class="billDate"></span></p>
-                        <p><strong>TIME:</strong> <span class="billTime"></span></p>
-                    </div>
-                </div>
-
-                <table class="invoice-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 6%;">S.No</th>
-                            <th>Item Description</th>
-                            <th class="text-center" style="width: 12%;">Qty</th>
-                            <th class="text-center" style="width: 12%;">Unit</th>
-                            <th class="text-right" style="width: 18%;">Rate (₹)</th>
-                            <th class="
+            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="
