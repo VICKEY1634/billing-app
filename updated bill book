@@ -620,4 +620,525 @@
         <div id="invoice" class="invoice-container size-4x6">
             
             <!-- Diamond Graphic Watermark SVG -->
-            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="
+            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M128 32L32 160L256 480L480 160L384 32H128Z" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M32 160H480" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M128 32L192 160L256 480L320 160L384 32" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M192 160H320" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M256 32V160" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+            </svg>
+
+            <div>
+                <div class="estimate-heading">ESTIMATE</div>
+
+                <div class="invoice-header">
+                    <div class="company-details">
+                        <h1 id="storeName" contenteditable="true" title="Click to edit shop name">CASH</h1>
+                        <p id="storePhone" contenteditable="true" title="Click to edit phone">Phone: 0</p>
+                        
+                        <!-- Stone Weight Row (Hidden automatically if 0) -->
+                        <div class="stone-wt-header-row stoneWtRow" id="stoneWtRowContainer">
+                            <span>Total Stone Wt:</span>
+                            <div class="no-print" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <input type="number" id="stoneWtInput" class="summary-input" value="0" min="0" step="any" oninput="updateStoneWt()" placeholder="0" style="width: 55px; padding: 1px 3px;"> grams
+                            </div>
+                            <span class="print-only">
+                                <span class="printStoneWtVal">0</span> grams
+                            </span>
+                        </div>
+                    </div>
+                    <div class="bill-meta">
+                        <p><strong>INVOICE NO:</strong> <span class="billNo">#1</span></p>
+                        <p><strong>DATE:</strong> <span class="billDate"></span></p>
+                        <p><strong>TIME:</strong> <span class="billTime"></span></p>
+                    </div>
+                </div>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">S.No</th>
+                            <th>Item Description</th>
+                            <th class="text-center" style="width: 12%;">Qty</th>
+                            <th class="text-center" style="width: 12%;">Unit</th>
+                            <th class="text-right" style="width: 18%;">Rate (₹)</th>
+                            <th class="text-right" style="width: 20%;">Total (₹)</th>
+                            <th class="no-print" style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="billBody"></tbody>
+                </table>
+
+                <div class="invoice-summary">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Sub Total:</span>
+                            <span>₹<span class="subTotal">0.00</span></span>
+                        </div>
+                        
+                        <!-- Discount Row: Edit karne ke liye hamesha dikhegi, lekin print mein sirf tab aayegi jab discount > 0 ho -->
+                        <div class="summary-row discountRow" id="discountRowContainer">
+                            <span>Discount:</span>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <input type="number" id="discountPercent" class="summary-input" value="0" min="0" max="100" step="any" oninput="onPercentChange()" placeholder="0">%
+                                <span>/</span>
+                                ₹<input type="number" id="discountAmount" class="summary-input" value="0" min="0" step="any" oninput="onAmountChange()" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="summary-row grand-total">
+                            <span>Grand Total:</span>
+                            <span>₹<span class="grandTotal">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="footer-note">
+                    <p style="margin:0;">Thank you for your business! Visit Again.</p>
+                </div>
+
+                <div class="qr-wrapper">
+                    <div class="qr-container-corner" id="qrAdContainer">
+                        <div id="qrcodeAdBox" class="qr-code-box"></div>
+                        <div class="qr-label">📢 OFFERS & MEDIA</div>
+                    </div>
+
+                    <div class="qr-container-corner" id="qrLocationContainer">
+                        <div id="qrcodeLocationBox" class="qr-code-box"></div>
+                        <div class="qr-label">📍 LOCATION</div>
+                    </div>
+
+                    <div class="qr-container-corner" id="qrCornerContainer">
+                        <div id="qrcodeBox" class="qr-code-box"></div>
+                        <div class="qr-label">SCAN QR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW MODAL -->
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#1a365d;">👁️ Black & White Print Preview</h3>
+                <button onclick="closePreviewModal()" style="background:#e53e3e; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            <div id="previewTarget" class="preview-bw-container"></div>
+            <div style="margin-top: 15px; width: 100%; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closePreviewModal()" style="background:#718096; color:white; border:none; padding:8px 16px; cursor:pointer; border-radius:4px;">Close</button>
+                <button onclick="triggerPrintFromModal()" class="btn-print">🖨️ Print Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-card history-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#1a365d;">📜 Saved Billing History</h3>
+                <button onclick="closeHistoryModal()" style="background:#e53e3e; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-del-single" style="padding: 8px 14px; font-weight:600;" onclick="deleteSelectedHistory()">🗑️ Delete Selected</button>
+                <span style="font-size: 12px; color: #718096;">Check "Select All" to choose all bills</span>
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto; width: 100%;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;">
+                                <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)">
+                            </th>
+                            <th>Bill No</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Grand Total</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let billCounter = parseInt(localStorage.getItem('quickBill_currentNo')) || 1;
+        let customUnits = JSON.parse(localStorage.getItem('quickBill_units')) || ['pcs', 'gms', 'lines'];
+        let qrObj1 = null, qrObj2 = null, qrObj3 = null;
+
+        function loadUnitOptions() {
+            const select = document.getElementById('itemUnit');
+            select.innerHTML = '';
+            customUnits.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.innerText = u;
+                select.appendChild(opt);
+            });
+            const addOpt = document.createElement('option');
+            addOpt.value = '__add_new__';
+            addOpt.innerText = '+ Add New Unit';
+            addOpt.style.fontWeight = 'bold';
+            addOpt.style.color = '#2b6cb0';
+            select.appendChild(addOpt);
+        }
+
+        function handleUnitChange(select) {
+            if (select.value === '__add_new__') {
+                let newUnit = prompt("Enter new unit name (e.g. box, packet, kg):");
+                if (newUnit && newUnit.trim() !== '') {
+                    newUnit = newUnit.trim().toLowerCase();
+                    if (!customUnits.includes(newUnit)) {
+                        customUnits.push(newUnit);
+                        localStorage.setItem('quickBill_units', JSON.stringify(customUnits));
+                    }
+                    loadUnitOptions();
+                    select.value = newUnit;
+                } else {
+                    select.value = customUnits[0] || 'pcs';
+                }
+            }
+        }
+
+        function changeFontSize(val) {
+            document.getElementById('fontSizeDisplay').innerText = val + 'px';
+            document.getElementById('invoice').style.setProperty('--bill-font-size', val + 'px');
+        }
+
+        function changePageSize() {
+            const size = document.getElementById('pageSizeSelect').value;
+            const inv = document.getElementById('invoice');
+            const pageStyle = document.getElementById('page-style');
+            inv.className = 'invoice-container size-' + size.toLowerCase();
+            
+            if (size === 'A4') {
+                pageStyle.innerHTML = '@page { size: A4; margin: 0 !important; }';
+            } else if (size === '5x7') {
+                pageStyle.innerHTML = '@page { size: 5in 7in; margin: 0 !important; }';
+            } else {
+                pageStyle.innerHTML = '@page { size: 4in 6in; margin: 0 !important; }';
+            }
+        }
+
+        function moveNext(event, nextId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function checkEnterAndAdd(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addItem();
+            }
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const qty = parseFloat(document.getElementById('itemQty').value) || 1;
+            const unit = document.getElementById('itemUnit').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+            if (!name) {
+                alert('Kripya item ka naam darein!');
+                document.getElementById('itemName').focus();
+                return;
+            }
+
+            items.push({ name, qty, unit, price, total: qty * price });
+            
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '1';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemName').focus();
+
+            renderBill();
+        }
+
+        function deleteItem(index) {
+            items.splice(index, 1);
+            renderBill();
+        }
+
+        function updateStoneWt() {
+            renderBill();
+        }
+
+        function onPercentChange() {
+            const subTotal = items.reduce((sum, item) => sum + item.total, 0);
+            const percent = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const amt = (subTotal * percent) / 100;
+            document.getElementById('discountAmount').value = amt.toFixed(2);
+            renderBill();
+        }
+
+        function onAmountChange() {
+            const subTotal = items.reduce((sum, item) => sum + item.total, 0);
+            const amt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            let percent = 0;
+            if (subTotal > 0) {
+                percent = (amt / subTotal) * 100;
+            }
+            document.getElementById('discountPercent').value = percent.toFixed(2);
+            renderBill();
+        }
+
+        function renderBill() {
+            const tbody = document.querySelector('.billBody');
+            tbody.innerHTML = '';
+
+            let subTotal = 0;
+            items.forEach((item, index) => {
+                subTotal += item.total;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td class="text-center">${item.qty}</td>
+                    <td class="text-center">${item.unit}</td>
+                    <td class="text-right">${item.price.toFixed(2)}</td>
+                    <td class="text-right">${item.total.toFixed(2)}</td>
+                    <td class="no-print text-center"><button class="delete-btn" onclick="deleteItem(${index})" title="Delete">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelector('.subTotal').innerText = subTotal.toFixed(2);
+
+            const discountAmt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const discountRowEl = document.getElementById('discountRowContainer');
+            
+            // Agar discount 0 ya khali hai, toh print ke samay yeh row hide rahegi (CSS print rule ke zariye)
+            if (discountAmt > 0) {
+                discountRowEl.classList.remove('print-hide-row');
+            } else {
+                discountRowEl.classList.add('print-hide-row');
+            }
+
+            const grandTotal = Math.max(0, subTotal - discountAmt);
+            document.querySelector('.grandTotal').innerText = grandTotal.toFixed(2);
+
+            const stoneWtVal = parseFloat(document.getElementById('stoneWtInput').value) || 0;
+            const stoneRowEl = document.getElementById('stoneWtRowContainer');
+            if (stoneWtVal > 0) {
+                stoneRowEl.style.display = 'flex';
+            } else {
+                stoneRowEl.style.display = 'none';
+            }
+        }
+
+        function clearBill() {
+            if (confirm("Kya aap poora bill reset karna chahte hain?")) {
+                items = [];
+                document.getElementById('discountPercent').value = '0';
+                document.getElementById('discountAmount').value = '0';
+                document.getElementById('stoneWtInput').value = '0';
+                renderBill();
+            }
+        }
+
+        function updateQRCodes() {
+            const text1 = document.getElementById('qrTextInput').value.trim();
+            const text2 = document.getElementById('locationInput').value.trim();
+            const text3 = document.getElementById('adInput').value.trim();
+
+            const size1 = parseInt(document.getElementById('qr1Size').value) || 50;
+            const size2 = parseInt(document.getElementById('qr2Size').value) || 50;
+            const size3 = parseInt(document.getElementById('qr3Size').value) || 50;
+
+            document.getElementById('qr1SizeDisplay').innerText = size1 + 'px';
+            document.getElementById('qr2SizeDisplay').innerText = size2 + 'px';
+            document.getElementById('qr3SizeDisplay').innerText = size3 + 'px';
+
+            document.getElementById('qrcodeBox').innerHTML = '';
+            if (text1) {
+                qrObj1 = new QRCode(document.getElementById('qrcodeBox'), {
+                    text: text1, width: size1, height: size1, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            document.getElementById('qrcodeLocationBox').innerHTML = '';
+            if (text2) {
+                qrObj2 = new QRCode(document.getElementById('qrcodeLocationBox'), {
+                    text: text2, width: size2, height: size2, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            document.getElementById('qrcodeAdBox').innerHTML = '';
+            if (text3) {
+                qrObj3 = new QRCode(document.getElementById('qrcodeAdBox'), {
+                    text: text3, width: size3, height: size3, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            toggleQrVisibility();
+        }
+
+        function toggleQrVisibility() {
+            const show1 = document.getElementById('showQrCheckbox').checked;
+            const show2 = document.getElementById('showLocationQrCheckbox').checked;
+            const show3 = document.getElementById('showAdQrCheckbox').checked;
+
+            const c1 = document.getElementById('qrCornerContainer');
+            const c2 = document.getElementById('qrLocationContainer');
+            const c3 = document.getElementById('qrAdContainer');
+
+            c1.style.display = show1 ? 'flex' : 'none';
+            c2.style.display = show2 ? 'flex' : 'none';
+            c3.style.display = show3 ? 'flex' : 'none';
+        }
+
+        function saveCurrentBillToHistory() {
+            if (items.length === 0) return;
+            const subTotal = items.reduce((sum, i) => sum + i.total, 0);
+            const discountAmt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const grandTotal = Math.max(0, subTotal - discountAmt);
+
+            const billData = {
+                billNo: '#' + billCounter,
+                dateTime: new Date().toLocaleString(),
+                itemsCount: items.reduce((sum, i) => sum + i.qty, 0),
+                grandTotal: grandTotal.toFixed(2),
+                items: [...items],
+                storeName: document.getElementById('storeName').innerText,
+                storePhone: document.getElementById('storePhone').innerText
+            };
+
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            history.unshift(billData);
+            if (history.length > 50) history.pop();
+            localStorage.setItem('quickBill_history', JSON.stringify(history));
+
+            billCounter++;
+            localStorage.setItem('quickBill_currentNo', billCounter);
+            document.querySelector('.billNo').innerText = '#' + billCounter;
+        }
+
+        function triggerPrint() {
+            if (items.length === 0) {
+                alert('Pehle bill me kuch items add karein!');
+                return;
+            }
+            saveCurrentBillToHistory();
+            window.print();
+        }
+
+        function openPreviewModal() {
+            if (items.length === 0) {
+                alert('Pehle bill me kuch items add karein!');
+                return;
+            }
+            const invoiceHTML = document.getElementById('invoice').outerHTML;
+            document.getElementById('previewTarget').innerHTML = invoiceHTML;
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function triggerPrintFromModal() {
+            closePreviewModal();
+            triggerPrint();
+        }
+
+        function openHistoryModal() {
+            const history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#718096;">Koi saved bill history nahi mili.</td></tr>`;
+            } else {
+                history.forEach((h, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: center;"><input type="checkbox" class="history-checkbox" data-index="${idx}"></td>
+                        <td><strong>${h.billNo}</strong></td>
+                        <td>${h.dateTime}</td>
+                        <td>${h.itemsCount} items</td>
+                        <td>₹${h.grandTotal}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action-small btn-edit" onclick="loadBillFromHistory(${idx})">Load</button>
+                            <button class="btn-action-small btn-del-single" onclick="deleteSingleHistory(${idx})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        function toggleSelectAllHistory(master) {
+            const checkboxes = document.querySelectorAll('.history-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        function deleteSingleHistory(index) {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            history.splice(index, 1);
+            localStorage.setItem('quickBill_history', JSON.stringify(history));
+            openHistoryModal();
+        }
+
+        function deleteSelectedHistory() {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            const checkboxes = document.querySelectorAll('.history-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Kripya delete karne ke liye bills select karein!');
+                return;
+            }
+            if (confirm("Selected bills ko delete karna hai?")) {
+                const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-index'))).sort((a,b) => b-a);
+                indicesToDelete.forEach(idx => history.splice(idx, 1));
+                localStorage.setItem('quickBill_history', JSON.stringify(history));
+                document.getElementById('selectAllHistory').checked = false;
+                openHistoryModal();
+            }
+        }
+
+        function loadBillFromHistory(index) {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            const h = history[index];
+            if (h) {
+                items = [...h.items];
+                document.getElementById('storeName').innerText = h.storeName;
+                document.getElementById('storePhone').innerText = h.storePhone;
+                document.querySelector('.billNo').innerText = h.billNo;
+                renderBill();
+                closeHistoryModal();
+            }
+        }
+
+        window.onload = function() {
+            loadUnitOptions();
+            document.querySelector('.billNo').innerText = '#' + billCounter;
+            
+            const now = new Date();
+            document.querySelector('.billDate').innerText = now.toLocaleDateString();
+            document.querySelector('.billTime').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            updateQRCodes();
+            renderBill();
+        };
+    </script>
+    <style>
+        /* Agar discount 0 ho toh print ke samay yeh class hide kar degi */
+        @media print {
+            .print-hide-row { display: none !important; }
+        }
+    </style>
+</body>
+</html>
