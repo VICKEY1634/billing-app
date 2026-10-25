@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickBill Pro - Direct Working</title>
-    <!-- Real QR Code Library CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>QuickBill Pro - Absolute Direct</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
@@ -33,7 +31,6 @@
         .summary-box { width: 100%; max-width: 320px; border: 1.5px solid #000; border-radius: 4px; padding: 6px; }
         .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; font-weight: bold; }
         .footer-section { margin-top: auto; border-top: 1px solid #ccc; padding-top: 6px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .qr-code-box { display: flex; align-items: center; justify-content: center; background: #fff; padding: 4px; border: 1px solid #000; width: 65px; height: 65px; }
         @media print {
             body { background: white !important; padding: 0 !important; }
             .control-panel { display: none !important; }
@@ -45,7 +42,7 @@
 
     <div class="control-panel">
         <div class="panel-header">
-            <span>⚙️ Billing Control Panel (Direct Mode)</span>
+            <span>⚙️ Billing Control Panel (Absolute Direct)</span>
         </div>
 
         <div class="form-grid">
@@ -74,16 +71,16 @@
                 <input type="number" id="itemPrice" placeholder="0.00" min="0" step="any">
             </div>
             <div class="form-group" style="display: flex; gap: 6px;">
-                <button type="button" class="btn-voice" onclick="startVoice()">🎤 Speak</button>
-                <button type="button" class="btn-add" onclick="addItemDirect()">+ Add Item</button>
+                <button type="button" class="btn-voice" onclick="alert('Speak button working!');">🎤 Speak</button>
+                <button type="button" class="btn-add" onclick="myAddItem()">+ Add Item</button>
             </div>
         </div>
 
         <div class="action-bar">
-            <button type="button" class="btn-clear" onclick="clearBillDirect()">🗑️ Reset Bill</button>
+            <button type="button" class="btn-clear" onclick="myClearBill()">🗑️ Reset Bill</button>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="btn-whatsapp" onclick="sendWhatsApp()">⚡ WhatsApp</button>
-                <button type="button" class="btn-print" onclick="printBill()">🖨️ Print Invoice</button>
+                <button type="button" class="btn-whatsapp" onclick="alert('WhatsApp button working!');">⚡ WhatsApp</button>
+                <button type="button" class="btn-print" onclick="window.print();">🖨️ Print Invoice</button>
             </div>
         </div>
     </div>
@@ -99,7 +96,7 @@
                     <p style="margin:2px 0;">Customer Phone: <span id="billCustPhone">0</span></p>
                 </div>
                 <div style="text-align: right;">
-                    <p style="margin:2px 0;"><strong>INVOICE NO:</strong> <span id="billNoDisplay">#1</span></p>
+                    <p style="margin:2px 0;"><strong>INVOICE NO:</strong> #1</p>
                     <p style="margin:2px 0;"><strong>DATE:</strong> <span id="billDate"></span></p>
                 </div>
             </div>
@@ -133,111 +130,82 @@
 
         <div class="footer-section">
             <p style="margin:0;">Thank you for your business!</p>
-            <div id="qrcodeBox" class="qr-code-box"></div>
         </div>
     </div>
 
     <script>
-        let cartItems = [];
-
-        // Set date on load
+        // Set date immediately
         document.getElementById('billDate').innerText = new Date().toLocaleDateString('en-GB');
 
-        // Generate QR code directly
-        if (typeof QRCode !== "undefined") {
-            new QRCode(document.getElementById("qrcodeBox"), {
-                text: "upi://pay?pa=vickey1634@ybl&pn=vikram",
-                width: 55,
-                height: 55
-            });
-        }
+        let globalItems = [];
 
-        function addItemDirect() {
-            const name = document.getElementById('itemName').value.trim();
-            const qty = parseFloat(document.getElementById('itemQty').value) || 1;
-            const unit = document.getElementById('itemUnit').value;
-            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+        function myAddItem() {
+            const nameField = document.getElementById('itemName');
+            const qtyField = document.getElementById('itemQty');
+            const unitField = document.getElementById('itemUnit');
+            const priceField = document.getElementById('itemPrice');
+
+            const name = nameField.value.trim();
+            const qty = parseFloat(qtyField.value) || 1;
+            const unit = unitField.value;
+            const price = parseFloat(priceField.value) || 0;
 
             if (!name) {
-                alert('Kripya item ka naam daalein!');
-                document.getElementById('itemName').focus();
+                alert('Item ka naam daalein!');
+                nameField.focus();
                 return;
             }
 
-            cartItems.push({ name, qty, unit, price, total: qty * price });
-            
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemQty').value = '1';
-            document.getElementById('itemPrice').value = '';
-            document.getElementById('itemName').focus();
+            globalItems.push({ name: name, qty: qty, unit: unit, price: price, total: qty * price });
 
-            renderTable();
+            nameField.value = '';
+            qtyField.value = '1';
+            priceField.value = '';
+            nameField.focus();
+
+            renderMyTable();
         }
 
-        function removeItemDirect(index) {
-            cartItems.splice(index, 1);
-            renderTable();
+        function myRemoveItem(index) {
+            globalItems.splice(index, 1);
+            renderMyTable();
         }
 
-        function renderTable() {
+        function renderMyTable() {
             const tbody = document.getElementById('billBody');
             tbody.innerHTML = '';
-            let totalSum = 0;
+            let sum = 0;
 
-            if (cartItems.length === 0) {
+            if (globalItems.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#718096; padding:10px;">No items added yet.</td></tr>`;
             } else {
-                cartItems.forEach((item, idx) => {
-                    totalSum += item.total;
-                    const tr = document.createElement('tr');
+                for (let i = 0; i < globalItems.length; i++) {
+                    let item = globalItems[i];
+                    sum += item.total;
+                    let tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${idx + 1}</td>
+                        <td>${i + 1}</td>
                         <td>${item.name}</td>
                         <td class="text-center">${item.qty}</td>
                         <td class="text-center">${item.unit}</td>
                         <td class="text-right">₹${item.price.toFixed(2)}</td>
                         <td class="text-right">₹${item.total.toFixed(2)}</td>
-                        <td class="text-center"><button type="button" onclick="removeItemDirect(${idx})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">❌</button></td>
+                        <td class="text-center"><button type="button" onclick="myRemoveItem(${i})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">❌</button></td>
                     `;
                     tbody.appendChild(tr);
-                });
+                }
             }
 
-            document.getElementById('grandTotal').innerText = totalSum.toFixed(2);
+            document.getElementById('grandTotal').innerText = sum.toFixed(2);
         }
 
-        function clearBillDirect() {
-            if (confirm('Poora bill clear karna hai?')) {
-                cartItems = [];
+        function myClearBill() {
+            if (confirm('Bill reset karna hai?')) {
+                globalItems = [];
                 document.getElementById('custPhoneInput').value = '';
                 document.getElementById('billCustPhone').innerText = '0';
-                renderTable();
+                renderMyTable();
             }
-        }
-
-        function printBill() {
-            window.print();
-        }
-
-        function sendWhatsApp() {
-            let phone = document.getElementById('custPhoneInput').value.trim();
-            if(!phone) phone = prompt("Customer Phone Number:");
-            if(!phone) return;
-            alert("WhatsApp message ready for number: " + phone);
-        }
-
-        function startVoice() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Voice recognition support nahi hai is browser mein.");
-                return;
-            }
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.onresult = function(event) {
-                document.getElementById('itemName').value = event.results[0][0].transcript;
-            };
-            recognition.start();
         }
     </script>
 </body>
