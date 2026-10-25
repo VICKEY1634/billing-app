@@ -28,8 +28,6 @@
         input:focus, select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); }
         .btn-add { background-color: #2b6cb0; color: white; font-weight: 600; cursor: pointer; border: none; height: 38px; align-self: flex-end; }
         .btn-add:hover { background-color: #2c5282; }
-        .btn-voice { background-color: #805ad5; color: white; font-weight: 600; cursor: pointer; border: none; height: 38px; align-self: flex-end; border-radius: 6px; padding: 0 12px; }
-        .btn-voice:hover { background-color: #6b46c1; }
         .btn-whatsapp { background-color: #25d366; color: white; font-weight: 700; font-size: 13px; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
         .btn-whatsapp:hover { background-color: #1eb857; }
         .btn-preview { background-color: #4a5568; color: white; font-weight: 600; font-size: 13px; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
@@ -213,7 +211,6 @@
                 <input type="number" id="itemPrice" placeholder="0.00" min="0" step="any" onkeydown="checkEnterAndAdd(event)">
             </div>
             <div class="form-group" style="display: flex; gap: 6px;">
-                <button type="button" class="btn-voice" onclick="startVoiceRecognition()" title="Speak to add item">🎤 Speak</button>
                 <button type="button" class="btn-add" onclick="addItem()">+ Add Item</button>
             </div>
         </div>
@@ -562,20 +559,6 @@
             }
         }
 
-        function moveNext(event, nextId) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById(nextId).focus();
-            }
-        }
-
-        function checkEnterAndAdd(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                addItem();
-            }
-        }
-
         function addItem() {
             const name = document.getElementById('itemName').value.trim();
             const qty = parseFloat(document.getElementById('itemQty').value) || 1;
@@ -617,23 +600,27 @@
             tbody.innerHTML = '';
             let subTotal = 0;
 
-            items.forEach((item, idx) => {
-                subTotal += item.total;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${idx + 1}</td>
-                    <td>${item.name}</td>
-                    <td class="text-center">${item.qty}</td>
-                    <td class="text-center">${item.unit}</td>
-                    <td class="text-right">₹${item.price.toFixed(2)}</td>
-                    <td class="text-right">₹${item.total.toFixed(2)}</td>
-                    <td class="no-print text-center">
-                        <button type="button" class="edit-btn" onclick="editItem(${idx})" title="Edit">✏️</button>
-                        <button type="button" class="delete-btn" onclick="deleteItem(${idx})" title="Delete">❌</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            if(items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#718096; padding:10px;">No items added yet. Use form above.</td></tr>`;
+            } else {
+                items.forEach((item, idx) => {
+                    subTotal += item.total;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${idx + 1}</td>
+                        <td>${item.name}</td>
+                        <td class="text-center">${item.qty}</td>
+                        <td class="text-center">${item.unit}</td>
+                        <td class="text-right">₹${item.price.toFixed(2)}</td>
+                        <td class="text-right">₹${item.total.toFixed(2)}</td>
+                        <td class="no-print text-center">
+                            <button type="button" class="edit-btn" onclick="editItem(${idx})" title="Edit">✏️</button>
+                            <button type="button" class="delete-btn" onclick="deleteItem(${idx})" title="Delete">❌</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
 
             document.querySelectorAll('.subTotal').forEach(el => el.innerText = subTotal.toFixed(2));
             calculateGrandTotal(subTotal);
@@ -723,47 +710,6 @@
             document.getElementById('qrCornerContainer').style.display = show1 ? 'flex' : 'none';
             document.getElementById('qrLocationContainer').style.display = show2 ? 'flex' : 'none';
             document.getElementById('qrAdContainer').style.display = show3 ? 'flex' : 'none';
-        }
-
-        // --- VOICE COMMAND FEATURE ---
-        function startVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Aapka browser Voice Recognition support nahi karta! Google Chrome use karein.");
-                return;
-            }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN';
-            recognition.interimResults = false;
-
-            const btn = document.querySelector('.btn-voice');
-            btn.innerText = "🔴 Listening...";
-            btn.style.background = "#e53e3e";
-
-            recognition.start();
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                btn.innerText = "🎤 Speak";
-                btn.style.background = "#805ad5";
-
-                const numbers = transcript.match(/\d+/g);
-                if (numbers && numbers.length >= 2) {
-                    document.getElementById('itemQty').value = numbers[0];
-                    document.getElementById('itemPrice').value = numbers[1];
-                    let nameText = transcript.replace(numbers[0], '').replace(numbers[1], '').replace(/rate|price|qty|piece|gram|gms/gi, '').trim();
-                    document.getElementById('itemName').value = nameText || transcript;
-                } else {
-                    document.getElementById('itemName').value = transcript;
-                }
-            };
-
-            recognition.onerror = function() {
-                btn.innerText = "🎤 Speak";
-                btn.style.background = "#805ad5";
-                alert("Voice samajh nahi aayi, kripya dobara bolein.");
-            };
         }
 
         function clearBill() {
@@ -960,6 +906,20 @@
                 updateCustomerPhone();
                 renderBill();
                 closeHistoryModal();
+            }
+        }
+
+        function moveNext(e, nextId) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function checkEnterAndAdd(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addItem();
             }
         }
 
