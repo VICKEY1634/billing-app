@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="hi" class="notranslate" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBill Pro - Billing Software</title>
+    <!-- Real QR Code Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style id="page-style">
+        @page { size: 5in 7in; margin: 0 !important; }
+    </style>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .control-panel { background: #ffffff; padding: 18px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 950px; margin: 0 auto 25px auto; border: 1px solid #e1e4e8; }
+        .panel-header { font-size: 16px; font-weight: 700; color: #1a365d; margin-bottom: 15px; border-bottom: 2px solid #edf2f7; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .settings-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .setting-box { display: flex; align-items: center; gap: 6px; }
+        .btn-save-default { background-color: #2b6cb0; color: white; font-weight: 600; font-size: 12px; cursor: pointer; border: none; padding: 7px 12px; border-radius: 6px; margin-left: 8px; }
+        .btn-save-default:hover { background-color: #2c5282; }
+        .btn-history { background-color: #4c51bf; color: white; font-weight: 600; font-size: 13px; cursor: pointer; border: none; padding: 7px 14px; border-radius: 6px; margin-left: auto; }
+        .btn-history:hover { background-color: #434190; }
+        .form-grid { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label, .setting-box label { font-size: 11px; font-weight: 700; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, button { padding: 8px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; transition: all 0.2s ease; }
+        input:focus, select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); }
+        .btn-add { background-color: #2b6cb0; color: white; font-weight: 600; cursor: pointer; border: none; height: 38px; align-self: flex-end; }
+        .btn-add:hover { background-color: #2c5282; }
+        .btn-voice { background-color: #805ad5; color: white; font-weight: 600; cursor: pointer; border: none; height: 38px; align-self: flex-end; border-radius: 6px; padding: 0 12px; }
+        .btn-voice:hover { background-color: #6b46c1; }
+        .btn-whatsapp { background-color: #25d366; color: white; font-weight: 700; font-size: 13px; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
+        .btn-whatsapp:hover { background-color: #1eb857; }
+        .btn-preview { background-color: #4a5568; color: white; font-weight: 600; font-size: 13px; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
+        .btn-preview:hover { background-color: #2d3748; }
+        .btn-print { background-color: #2f855a; color: white; font-weight: 700; font-size: 13px; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
+        .btn-print:hover { background-color: #276749; }
+        .btn-clear { background-color: #e53e3e; color: white; font-weight: 600; cursor: pointer; border: none; padding: 8px 14px; border-radius: 6px; }
+        .btn-clear:hover { background-color: #c53030; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; flex-wrap: wrap; gap: 10px; }
+        .invoice-container { --bill-font-size: 11px; background: #ffffff; margin: 0 auto 20px auto; padding: 15px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: all 0.3s ease; box-sizing: border-box; font-size: var(--bill-font-size) !important; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 1; }
+        .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 55%; height: auto; opacity: 0.06; pointer-events: none; z-index: -1; }
+        .invoice-container *, .invoice-container h1, .invoice-container p, .invoice-container td, .invoice-container th, .invoice-container span, .invoice-container div, .invoice-container input { font-size: var(--bill-font-size) !important; line-height: 1.2; }
+        .estimate-heading { text-align: center; font-size: 12px !important; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 6px; text-transform: uppercase; color: #000; }
+        .size-a4 { width: 210mm; min-height: 297mm; }
+        .size-4x6 { width: 4in; height: 5.8in; padding: 10px !important; }
+        .size-5x7 { width: 5in; height: 6.8in; padding: 12px !important; }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 1.5px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+        .company-details h1 { margin: 0; font-weight: 700; color: #000; text-transform: uppercase; outline: none; }
+        .company-details p { margin: 2px 0; color: #000; outline: none; }
+        .stone-wt-header-row { margin-top: 4px; font-weight: bold; color: #000; display: flex; align-items: center; gap: 4px; }
+        .bill-meta { text-align: right; }
+        .bill-meta p { margin: 2px 0; }
+        .bill-meta span { font-weight: bold; color: #000; }
+        .billNoInput { font-weight: bold; color: #000; border: 1px dashed #888; padding: 1px 4px; border-radius: 4px; background: #fff; text-align: right; width: 80px; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        .invoice-table th { background-color: #f0f0f0; color: #000; font-weight: 700; text-transform: uppercase; padding: 4px 6px; border-bottom: 1.5px solid #000; text-align: left; }
+        .invoice-table td { padding: 4px 6px; border-bottom: 1px solid #ccc; color: #000; }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        .invoice-summary { display: flex; justify-content: flex-end; margin-top: 6px; }
+        .summary-box { width: 100%; max-width: 320px; background: rgba(255, 255, 255, 0.85); border: 1.5px solid #000; border-radius: 4px; padding: 6px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+        .summary-input { width: 60px; padding: 2px 4px; text-align: right; border: 1px solid #888; }
+        .summary-row.grand-total { border-top: 1.5px solid #000; font-weight: bold; color: #000; padding-top: 3px; margin-top: 3px; }
+        .delete-btn { color: #e53e3e; cursor: pointer; font-weight: bold; border: none; background: none; padding: 0 4px; }
+        .edit-btn { color: #2b6cb0; cursor: pointer; font-weight: bold; border: none; background: none; padding: 0 4px; margin-right: 4px; }
+        .footer-section { margin-top: auto; border-top: 1px solid #ccc; padding-top: 6px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; }
+        .footer-note { text-align: left; color: #000; flex: 1; padding-right: 10px; }
+        .qr-wrapper { display: flex; gap: 8px; align-items: flex-end; }
+        .qr-container-corner { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .qr-code-box { display: flex; align-items: center; justify-content: center; background: #fff; padding: 4px; border: 1px solid #000; }
+        .qr-label { font-size: 7px !important; font-weight: bold; margin-top: 2px; color: #000; text-transform: uppercase; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-card { background: #fff; border-radius: 10px; padding: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; }
+        .history-card { width: 90%; max-width: 900px; align-items: stretch; }
+        .modal-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .preview-bw-container { filter: grayscale(100%); -webkit-filter: grayscale(100%); background: white; border: 1px solid #333; }
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .history-table th, .history-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: left; font-size: 13px; }
+        .history-table th { background-color: #edf2f7; color: #2d3748; }
+        .print-only { display: none; }
+
+        @media print {
+            @page { size: 5in 7in; margin: 0 !important; }
+            html, body { background: white !important; color: black !important; filter: grayscale(100%) !important; -webkit-filter: grayscale(100%) !important; padding: 0 !important; margin: 0 !important; height: 100% !important; overflow: hidden !important; }
+            .no-print, .modal-overlay { display: none !important; }
+            .invoice-container { box-shadow: none !important; border: none !important; padding: 4mm !important; margin: 0 !important; width: 100% !important; max-height: 100% !important; color: #000 !important; page-break-after: avoid !important; page-break-inside: avoid !important; }
+            .invoice-container * { color: #000 !important; border-color: #000 !important; }
+            .billNoInput { border: none !important; background: transparent !important; text-align: right !important; padding: 0 !important; }
+            .watermark-overlay { opacity: 0.08 !important; }
+            .delete-btn, .edit-btn { display: none !important; }
+            .print-only { display: inline-block !important; }
+            .print-hide-row { display: none !important; }
+        }
+    </style>
+</head>
+<body class="notranslate" translate="no">
+
+    <div class="control-panel no-print">
+        <div class="panel-header">
+            <span>⚙️ Billing Control Panel</span>
+        </div>
+
+        <div class="settings-bar">
+            <div class="setting-box" style="background: #edf2f7; padding: 4px 8px; border-radius: 6px;">
+                <label for="fontSizeSlider">🔤 Font Size:</label>
+                <input type="range" id="fontSizeSlider" min="9" max="20" value="11" step="1" oninput="changeFontSize(this.value)" style="width: 80px; cursor: pointer;">
+                <span id="fontSizeDisplay" style="font-size: 11px; font-weight: bold; width: 32px; color: #2b6cb0;">11px</span>
+            </div>
+
+            <div class="setting-box">
+                <label for="copyCount">🖨️ Copies:</label>
+                <input type="number" id="copyCount" value="1" min="1" max="10" style="width: 50px; font-weight: bold; text-align: center; padding: 4px;">
+            </div>
+            
+            <div class="setting-box">
+                <label for="pageSizeSelect">📄 Size:</label>
+                <select id="pageSizeSelect" onchange="changePageSize()" style="font-weight: bold; color: #2b6cb0; padding: 4px;">
+                    <option value="4x6">4 x 6 Inches (Thermal / Small)</option>
+                    <option value="A4">A4 Size (Standard)</option>
+                    <option value="5x7" selected>5 x 7 Inches (Medium Slip)</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-save-default" onclick="saveAsDefaultSettings()">💾 Save as Default</button>
+            <button type="button" class="btn-history" onclick="openHistoryModal()">📜 History</button>
+        </div>
+
+        <!-- Meta WhatsApp Cloud API Settings -->
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+            <label style="font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; display: block; margin-bottom: 6px;">💬 Meta WhatsApp Direct Cloud API Credentials:</label>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <input type="text" id="waPhoneId" placeholder="Meta Phone Number ID" style="flex: 1; min-width: 180px;">
+                <input type="password" id="waToken" placeholder="Meta Permanent Access Token" style="flex: 2; min-width: 220px;">
+                <button type="button" onclick="saveWaApiKeys()" style="background:#166534; color:white; border:none; font-weight:bold; cursor:pointer; padding:6px 12px; border-radius:6px;">Save Keys</button>
+            </div>
+        </div>
+
+        <!-- QR Code Inputs -->
+        <div style="background: #eef2ff; border: 1px solid #c7d2fe; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+            <div style="margin-bottom: 10px;">
+                <label for="qrTextInput" style="font-size: 11px; font-weight: 700; color: #3730a3; text-transform: uppercase; display: block; margin-bottom: 4px;">💳 1. Dynamic UPI Payment QR Code:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="qrTextInput" value="vickey1634@ybl" oninput="updateQRCodes()" style="flex: 2; min-width: 180px; padding: 7px 10px; font-size: 13px;" title="UPI ID">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <label for="qr1Size" style="font-size: 11px; font-weight: bold;">Size:</label>
+                        <input type="range" id="qr1Size" min="40" max="120" value="60" step="5" oninput="updateQRCodes()" style="width: 70px; cursor: pointer;">
+                        <span id="qr1SizeDisplay" style="font-size: 11px; font-weight: bold; color: #3730a3; width: 32px;">60px</span>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; cursor: pointer; color: #1e293b; white-space: nowrap;">
+                        <input type="checkbox" id="showQrCheckbox" checked onchange="toggleQrVisibility()"> Show UPI QR
+                    </label>
+                </div>
+            </div>
+
+            <div style="border-top: 1px dashed #c7d2fe; padding-top: 8px; margin-bottom: 10px;">
+                <label for="locationInput" style="font-size: 11px; font-weight: 700; color: #3730a3; text-transform: uppercase; display: block; margin-bottom: 4px;">📍 2. Location QR Code (Google Maps Link):</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="locationInput" value="https://maps.google.com" oninput="updateQRCodes()" style="flex: 2; min-width: 180px; padding: 7px 10px; font-size: 13px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <label for="qr2Size" style="font-size: 11px; font-weight: bold;">Size:</label>
+                        <input type="range" id="qr2Size" min="40" max="120" value="60" step="5" oninput="updateQRCodes()" style="width: 70px; cursor: pointer;">
+                        <span id="qr2SizeDisplay" style="font-size: 11px; font-weight: bold; color: #3730a3; width: 32px;">60px</span>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; cursor: pointer; color: #1e293b; white-space: nowrap;">
+                        <input type="checkbox" id="showLocationQrCheckbox" checked onchange="toggleQrVisibility()"> Show Location QR
+                    </label>
+                </div>
+            </div>
+
+            <div style="border-top: 1px dashed #c7d2fe; padding-top: 8px;">
+                <label for="adInput" style="font-size: 11px; font-weight: 700; color: #3730a3; text-transform: uppercase; display: block; margin-bottom: 4px;">📢 3. Gallery Media & Promo QR Code:</label>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="adInput" value="https://drive.google.com" oninput="updateQRCodes()" style="flex: 2; min-width: 180px; padding: 7px 10px; font-size: 13px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <label for="qr3Size" style="font-size: 11px; font-weight: bold;">Size:</label>
+                        <input type="range" id="qr3Size" min="40" max="120" value="60" step="5" oninput="updateQRCodes()" style="width: 70px; cursor: pointer;">
+                        <span id="qr3SizeDisplay" style="font-size: 11px; font-weight: bold; color: #3730a3; width: 32px;">60px</span>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; cursor: pointer; color: #1e293b; white-space: nowrap;">
+                        <input type="checkbox" id="showAdQrCheckbox" onchange="toggleQrVisibility()"> Show Promo QR
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group" style="flex: 1.5; min-width: 150px;">
+                <label for="custPhoneInput">Customer Phone No</label>
+                <input type="text" id="custPhoneInput" placeholder="E.g. 9700271634" oninput="updateCustomerPhone()" onkeydown="moveNext(event, 'itemName')">
+            </div>
+            <div class="form-group" style="flex: 2; min-width: 180px;">
+                <label for="itemName">Item Ka Naam</label>
+                <input type="text" id="itemName" placeholder="E.g. Ring, Chain, Service..." onkeydown="moveNext(event, 'itemQty')">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 80px;">
+                <label for="itemQty">Qty</label>
+                <input type="number" id="itemQty" placeholder="1" value="1" min="0.01" step="any" onkeydown="moveNext(event, 'itemUnit')">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 90px;">
+                <label for="itemUnit">Unit</label>
+                <select id="itemUnit" onchange="handleUnitChange(this)" onkeydown="moveNext(event, 'itemPrice')">
+                    <option value="pcs">pcs</option>
+                    <option value="gms">gms</option>
+                    <option value="lines">lines</option>
+                    <option value="__add_new__" style="font-weight: bold; color: #2b6cb0;">+ Add New Unit</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 90px;">
+                <label for="itemPrice">Rate (₹)</label>
+                <input type="number" id="itemPrice" placeholder="0.00" min="0" step="any" onkeydown="checkEnterAndAdd(event)">
+            </div>
+            <div class="form-group" style="display: flex; gap: 6px;">
+                <button type="button" class="btn-voice" onclick="startVoiceRecognition()" title="Speak to add item">🎤 Speak</button>
+                <button type="button" class="btn-add" onclick="addItem()">+ Add Item</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button type="button" class="btn-clear" onclick="clearBill()">🗑️ Reset Entire Bill</button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-whatsapp" onclick="sendWhatsAppDirectApi()">⚡ Direct Cloud WhatsApp</button>
+                <button type="button" class="btn-preview" onclick="openPreviewModal()">👁️ Preview Invoice</button>
+                <button type="button" class="btn-print" onclick="triggerPrint()">🖨️ Print Invoice</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printWrapper">
+        <div id="invoice" class="invoice-container size-5x7">
+            <svg class="watermark-overlay" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M128 32L32 160L256 480L480 160L384 32H128Z" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M32 160H480" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M128 32L192 160L256 480L320 160L384 32" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M192 160H320" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M256 32V160" stroke="#000000" stroke-width="16" stroke-linejoin="round"/>
+            </svg>
+
+            <div>
+                <div class="estimate-heading">ESTIMATE</div>
+
+                <div class="invoice-header">
+                    <div class="company-details">
+                        <h1 id="storeName" contenteditable="true" title="Click to edit shop name">CASH</h1>
+                        <p id="storePhone" contenteditable="true" title="Click to edit phone">Phone: 0</p>
+                        <p id="custPhoneDisplay">Customer Phone: <span id="billCustPhone">0</span></p>
+                        <div class="stone-wt-header-row stoneWtRow" id="stoneWtRowContainer">
+                            <span>Total Stone Wt:</span>
+                            <div class="no-print" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <input type="number" id="stoneWtInput" class="summary-input" value="0" min="0" step="any" oninput="updateStoneWt()" placeholder="0" style="width: 55px; padding: 1px 3px;"> grams
+                            </div>
+                            <span class="print-only"><span class="printStoneWtVal">0</span> grams</span>
+                        </div>
+                    </div>
+                    <div class="bill-meta">
+                        <p><strong>INVOICE NO:</strong> <input type="text" id="billNoInput" class="billNoInput" value="#1" title="Click to edit Invoice No."></p>
+                        <p><strong>DATE:</strong> <span class="billDate"></span></p>
+                        <p><strong>TIME:</strong> <span class="billTime"></span></p>
+                    </div>
+                </div>
+
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">S.No</th>
+                            <th>Item Description</th>
+                            <th class="text-center" style="width: 12%;">Qty</th>
+                            <th class="text-center" style="width: 12%;">Unit</th>
+                            <th class="text-right" style="width: 18%;">Rate (₹)</th>
+                            <th class="text-right" style="width: 20%;">Total (₹)</th>
+                            <th class="no-print" style="width: 10%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="billBody"></tbody>
+                </table>
+
+                <div class="invoice-summary">
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Sub Total:</span>
+                            <span>₹<span class="subTotal">0.00</span></span>
+                        </div>
+                        <div class="summary-row discountRow" id="discountRowContainer">
+                            <span>Discount:</span>
+                            <div class="no-print" style="display: flex; align-items: center; gap: 4px;">
+                                <input type="number" id="discountPercent" class="summary-input" value="0" min="0" max="100" step="any" oninput="onPercentChange()" placeholder="0">%
+                                <span>/</span>
+                                ₹<input type="number" id="discountAmount" class="summary-input" value="0" min="0" step="any" oninput="onAmountChange()" placeholder="0">
+                            </div>
+                            <span class="print-only">- ₹<span class="printDiscountVal">0.00</span> (<span class="printDiscountPercent">0</span>%)</span>
+                        </div>
+                        <div class="summary-row grand-total">
+                            <span>Grand Total:</span>
+                            <span>₹<span class="grandTotal">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="footer-note">
+                    <p style="margin:0;">Thank you for your business! Visit Again.</p>
+                </div>
+                <div class="qr-wrapper">
+                    <div class="qr-container-corner" id="qrAdContainer">
+                        <div id="qrcodeAdBox" class="qr-code-box"></div>
+                        <div class="qr-label">📢 OFFERS & MEDIA</div>
+                    </div>
+                    <div class="qr-container-corner" id="qrLocationContainer">
+                        <div id="qrcodeLocationBox" class="qr-code-box"></div>
+                        <div class="qr-label">📍 LOCATION</div>
+                    </div>
+                    <div class="qr-container-corner" id="qrCornerContainer">
+                        <div id="qrcodeBox" class="qr-code-box"></div>
+                        <div class="qr-label">SCAN & PAY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW MODAL -->
+    <div id="previewModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#1a365d;">👁️ Black & White Print Preview</h3>
+                <button type="button" onclick="closePreviewModal()" style="background:#e53e3e; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            <div id="previewTarget" class="preview-bw-container"></div>
+            <div style="margin-top: 15px; width: 100%; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closePreviewModal()" style="background:#718096; color:white; border:none; padding:8px 16px; cursor:pointer; border-radius:4px;">Close</button>
+                <button type="button" onclick="triggerPrintFromModal()" class="btn-print">🖨️ Print Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-card history-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#1a365d;">📜 Saved Billing History</h3>
+                <button type="button" onclick="closeHistoryModal()" style="background:#e53e3e; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" style="background:#e53e3e; color:white; border:none; padding: 8px 14px; font-weight:600; border-radius:4px; cursor:pointer;" onclick="moveToRecycleBinSelected()">🗑️ Move Selected to Recycle Bin</button>
+                </div>
+                <button type="button" style="background:#d69e2e; color:white; border:none; padding: 8px 14px; font-weight:600; border-radius:4px; cursor:pointer;" onclick="openRecycleBinModal()">♻️ Open Recycle Bin</button>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto; width: 100%;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)"></th>
+                            <th>Bill No</th>
+                            <th>Customer Phone</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Grand Total</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECYCLE BIN MODAL -->
+    <div id="recycleBinModal" class="modal-overlay">
+        <div class="modal-card history-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#c53030;">♻️ Recycle Bin (Deleted Bills)</h3>
+                <button type="button" onclick="closeRecycleBinModal()" style="background:#718096; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 12px; color: #718096;">Jab tak aap yahan se delete nahi karenge, bills yahan mehfooz rahenge.</span>
+                <button type="button" style="background:#9b2c2c; color:white; border:none; padding: 8px 14px; font-weight:600; border-radius:4px; cursor:pointer;" onclick="emptyRecycleBin()">💥 Empty Entire Recycle Bin</button>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto; width: 100%;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Bill No</th>
+                            <th>Customer Phone</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Grand Total</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recycleBinTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let billCounter = parseInt(localStorage.getItem('quickBill_currentNo')) || 1;
+        let customUnits = JSON.parse(localStorage.getItem('quickBill_units')) || ['pcs', 'gms', 'lines'];
+
+        function saveWaApiKeys() {
+            const phoneId = document.getElementById('waPhoneId').value.trim();
+            const token = document.getElementById('waToken').value.trim();
+            localStorage.setItem('quickBill_waPhoneId', phoneId);
+            localStorage.setItem('quickBill_waToken', token);
+            alert("Meta API Credentials Saved!");
+        }
+
+        function loadWaApiKeys() {
+            const phoneId = localStorage.getItem('quickBill_waPhoneId') || '';
+            const token = localStorage.getItem('quickBill_waToken') || '';
+            document.getElementById('waPhoneId').value = phoneId;
+            document.getElementById('waToken').value = token;
+        }
+
+        async function sendWhatsAppDirectApi() {
+            const phoneId = localStorage.getItem('quickBill_waPhoneId');
+            const token = localStorage.getItem('quickBill_waToken');
+
+            if (!phoneId || !token) {
+                alert("Pehle Meta Phone Number ID aur Access Token save karein!");
+                return;
+            }
+
+            let phone = document.getElementById('custPhoneInput').value.trim();
+            if (!phone) phone = prompt("Customer Phone Number:");
+            if (!phone) return;
+
+            let cleanPhone = phone.replace(/[^0-9]/g, '');
+            if(cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const discAmt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const grandTotal = Math.max(0, subTotal - discAmt);
+            const billNo = document.getElementById('billNoInput').value;
+
+            const url = `https://graph.facebook.com/v18.0/${phoneId}/messages`;
+
+            const payload = {
+                messaging_product: "whatsapp",
+                to: cleanPhone,
+                type: "text",
+                text: {
+                    body: `Invoice ${billNo} from ${document.getElementById('storeName').innerText}.\nTotal Amount: ₹${grandTotal.toFixed(2)}.\nThank you!`
+                }
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const resData = await response.json();
+                if(response.ok) {
+                    alert("🚀 Message Sent Successfully directly to customer's WhatsApp!");
+                } else {
+                    alert("Error Sending WhatsApp API Message: " + (resData.error ? resData.error.message : "Unknown Error"));
+                }
+            } catch(e) {
+                alert("API Call Failed: " + e.message);
+            }
+        }
+
+        function updateCustomerPhone() {
+            const phone = document.getElementById('custPhoneInput').value.trim();
+            document.getElementById('billCustPhone').innerText = phone || '0';
+        }
+
+        function saveAsDefaultSettings() {
+            const defaults = {
+                fontSize: document.getElementById('fontSizeSlider').value,
+                copies: document.getElementById('copyCount').value,
+                pageSize: document.getElementById('pageSizeSelect').value,
+                showQr1: document.getElementById('showQrCheckbox').checked,
+                showQr2: document.getElementById('showLocationQrCheckbox').checked,
+                showQr3: document.getElementById('showAdQrCheckbox').checked,
+                qr1Size: document.getElementById('qr1Size').value,
+                qr2Size: document.getElementById('qr2Size').value,
+                qr3Size: document.getElementById('qr3Size').value
+            };
+            localStorage.setItem('quickBill_defaults', JSON.stringify(defaults));
+            alert('Aapki current settings default save ho gayi hain!');
+        }
+
+        function loadDefaultSettings() {
+            const savedDefaults = localStorage.getItem('quickBill_defaults');
+            if (savedDefaults) {
+                const defaults = JSON.parse(savedDefaults);
+                if (defaults.fontSize) { document.getElementById('fontSizeSlider').value = defaults.fontSize; changeFontSize(defaults.fontSize); }
+                if (defaults.copies) document.getElementById('copyCount').value = defaults.copies;
+                if (defaults.pageSize) { document.getElementById('pageSizeSelect').value = defaults.pageSize; changePageSize(); }
+                if (defaults.showQr1 !== undefined) document.getElementById('showQrCheckbox').checked = defaults.showQr1;
+                if (defaults.showQr2 !== undefined) document.getElementById('showLocationQrCheckbox').checked = defaults.showQr2;
+                if (defaults.showQr3 !== undefined) document.getElementById('showAdQrCheckbox').checked = defaults.showQr3;
+                if (defaults.qr1Size) document.getElementById('qr1Size').value = defaults.qr1Size;
+                if (defaults.qr2Size) document.getElementById('qr2Size').value = defaults.qr2Size;
+                if (defaults.qr3Size) document.getElementById('qr3Size').value = defaults.qr3Size;
+            } else {
+                changePageSize();
+            }
+        }
+
+        function loadUnitOptions() {
+            const select = document.getElementById('itemUnit');
+            if(!select) return;
+            select.innerHTML = '';
+            customUnits.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u; opt.innerText = u;
+                select.appendChild(opt);
+            });
+            const addOpt = document.createElement('option');
+            addOpt.value = '__add_new__';
+            addOpt.innerText = '+ Add New Unit';
+            addOpt.style.fontWeight = 'bold';
+            addOpt.style.color = '#2b6cb0';
+            select.appendChild(addOpt);
+        }
+
+        function handleUnitChange(select) {
+            if (select.value === '__add_new__') {
+                let newUnit = prompt("Enter new unit name:");
+                if (newUnit && newUnit.trim() !== '') {
+                    newUnit = newUnit.trim().toLowerCase();
+                    if (!customUnits.includes(newUnit)) {
+                        customUnits.push(newUnit);
+                        localStorage.setItem('quickBill_units', JSON.stringify(customUnits));
+                    }
+                    loadUnitOptions();
+                    select.value = newUnit;
+                } else {
+                    select.value = customUnits[0] || 'pcs';
+                }
+            }
+        }
+
+        function changeFontSize(val) {
+            document.getElementById('fontSizeDisplay').innerText = val + 'px';
+            document.getElementById('invoice').style.setProperty('--bill-font-size', val + 'px');
+        }
+
+        function changePageSize() {
+            const size = document.getElementById('pageSizeSelect').value;
+            const inv = document.getElementById('invoice');
+            inv.className = 'invoice-container size-' + size.toLowerCase();
+            const styleElem = document.getElementById('page-style');
+            if (size === 'A4') {
+                styleElem.innerHTML = '@page { size: A4; margin: 0 !important; }';
+            } else if (size === '4x6') {
+                styleElem.innerHTML = '@page { size: 4in 6in; margin: 0 !important; }';
+            } else {
+                styleElem.innerHTML = '@page { size: 5in 7in; margin: 0 !important; }';
+            }
+        }
+
+        function moveNext(event, nextId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function checkEnterAndAdd(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addItem();
+            }
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const qty = parseFloat(document.getElementById('itemQty').value) || 1;
+            const unit = document.getElementById('itemUnit').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+            if (!name) {
+                alert('Kripya item ka naam daalein!');
+                document.getElementById('itemName').focus();
+                return;
+            }
+
+            items.push({ name, qty, unit, price, total: qty * price });
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '1';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemName').focus();
+            renderBill();
+        }
+
+        function deleteItem(index) {
+            items.splice(index, 1);
+            renderBill();
+        }
+
+        function editItem(index) {
+            const itm = items[index];
+            document.getElementById('itemName').value = itm.name;
+            document.getElementById('itemQty').value = itm.qty;
+            document.getElementById('itemUnit').value = itm.unit;
+            document.getElementById('itemPrice').value = itm.price;
+            items.splice(index, 1);
+            renderBill();
+            document.getElementById('itemName').focus();
+        }
+
+        function renderBill() {
+            const tbody = document.querySelector('.billBody');
+            tbody.innerHTML = '';
+            let subTotal = 0;
+
+            items.forEach((item, idx) => {
+                subTotal += item.total;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${item.name}</td>
+                    <td class="text-center">${item.qty}</td>
+                    <td class="text-center">${item.unit}</td>
+                    <td class="text-right">₹${item.price.toFixed(2)}</td>
+                    <td class="text-right">₹${item.total.toFixed(2)}</td>
+                    <td class="no-print text-center">
+                        <button type="button" class="edit-btn" onclick="editItem(${idx})" title="Edit">✏️</button>
+                        <button type="button" class="delete-btn" onclick="deleteItem(${idx})" title="Delete">❌</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.subTotal').forEach(el => el.innerText = subTotal.toFixed(2));
+            calculateGrandTotal(subTotal);
+            updateQRCodes();
+        }
+
+        function calculateGrandTotal(subTotal) {
+            const discAmtInput = document.getElementById('discountAmount');
+            let discAmt = parseFloat(discAmtInput.value) || 0;
+            
+            let grandTotal = Math.max(0, subTotal - discAmt);
+            document.querySelectorAll('.grandTotal').forEach(el => el.innerText = grandTotal.toFixed(2));
+            document.querySelectorAll('.printDiscountVal').forEach(el => el.innerText = discAmt.toFixed(2));
+            
+            let percent = subTotal > 0 ? ((discAmt / subTotal) * 100).toFixed(1) : 0;
+            document.querySelectorAll('.printDiscountPercent').forEach(el => el.innerText = percent);
+        }
+
+        function onPercentChange() {
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const pct = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const amt = (subTotal * pct) / 100;
+            document.getElementById('discountAmount').value = amt.toFixed(2);
+            calculateGrandTotal(subTotal);
+        }
+
+        function onAmountChange() {
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const amt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const pct = subTotal > 0 ? (amt / subTotal) * 100 : 0;
+            document.getElementById('discountPercent').value = pct.toFixed(1);
+            calculateGrandTotal(subTotal);
+        }
+
+        function updateStoneWt() {
+            const val = document.getElementById('stoneWtInput').value || '0';
+            document.querySelectorAll('.printStoneWtVal').forEach(el => el.innerText = val);
+        }
+
+        function generateRealQR(elementId, text, size) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+            container.innerHTML = "";
+            if (!text) return;
+            if (typeof QRCode !== "undefined") {
+                new QRCode(container, {
+                    text: text,
+                    width: size,
+                    height: size,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
+        }
+
+        function updateQRCodes() {
+            const upiId = document.getElementById('qrTextInput').value.trim() || 'vickey1634@ybl';
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const discAmt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const grandTotal = Math.max(0, subTotal - discAmt);
+
+            const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("vikram kumar vedamutha")}&am=${grandTotal.toFixed(2)}&cu=INR`;
+
+            const s1 = parseInt(document.getElementById('qr1Size').value) || 60;
+            document.getElementById('qr1SizeDisplay').innerText = s1 + 'px';
+            generateRealQR('qrcodeBox', upiString, s1);
+
+            const locText = document.getElementById('locationInput').value.trim();
+            const s2 = parseInt(document.getElementById('qr2Size').value) || 60;
+            document.getElementById('qr2SizeDisplay').innerText = s2 + 'px';
+            generateRealQR('qrcodeLocationBox', locText, s2);
+
+            const adText = document.getElementById('adInput').value.trim();
+            const s3 = parseInt(document.getElementById('qr3Size').value) || 60;
+            document.getElementById('qr3SizeDisplay').innerText = s3 + 'px';
+            generateRealQR('qrcodeAdBox', adText, s3);
+
+            toggleQrVisibility();
+        }
+
+        function toggleQrVisibility() {
+            const show1 = document.getElementById('showQrCheckbox').checked;
+            const show2 = document.getElementById('showLocationQrCheckbox').checked;
+            const show3 = document.getElementById('showAdQrCheckbox').checked;
+
+            document.getElementById('qrCornerContainer').style.display = show1 ? 'flex' : 'none';
+            document.getElementById('qrLocationContainer').style.display = show2 ? 'flex' : 'none';
+            document.getElementById('qrAdContainer').style.display = show3 ? 'flex' : 'none';
+        }
+
+        // --- VOICE COMMAND FEATURE ---
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Aapka browser Voice Recognition support nahi karta! Google Chrome use karein.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+
+            const btn = document.querySelector('.btn-voice');
+            btn.innerText = "🔴 Listening...";
+            btn.style.background = "#e53e3e";
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                btn.innerText = "🎤 Speak";
+                btn.style.background = "#805ad5";
+
+                const numbers = transcript.match(/\d+/g);
+                if (numbers && numbers.length >= 2) {
+                    document.getElementById('itemQty').value = numbers[0];
+                    document.getElementById('itemPrice').value = numbers[1];
+                    let nameText = transcript.replace(numbers[0], '').replace(numbers[1], '').replace(/rate|price|qty|piece|gram|gms/gi, '').trim();
+                    document.getElementById('itemName').value = nameText || transcript;
+                } else {
+                    document.getElementById('itemName').value = transcript;
+                }
+            };
+
+            recognition.onerror = function() {
+                btn.innerText = "🎤 Speak";
+                btn.style.background = "#805ad5";
+                alert("Voice samajh nahi aayi, kripya dobara bolein.");
+            };
+        }
+
+        function clearBill() {
+            if (confirm('Kya aap sach mein poora bill reset karna chahte hain?')) {
+                items = [];
+                document.getElementById('custPhoneInput').value = '';
+                updateCustomerPhone();
+                document.getElementById('discountAmount').value = '0';
+                document.getElementById('discountPercent').value = '0';
+                document.getElementById('stoneWtInput').value = '0';
+                updateStoneWt();
+                renderBill();
+            }
+        }
+
+        function saveCurrentBillToHistory() {
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const discAmt = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const grandTotal = Math.max(0, subTotal - discAmt);
+            if(grandTotal <= 0 && items.length === 0) return;
+
+            const billData = {
+                billNo: document.getElementById('billNoInput').value,
+                custPhone: document.getElementById('custPhoneInput').value.trim() || 'N/A',
+                date: document.querySelector('.billDate').innerText,
+                time: document.querySelector('.billTime').innerText,
+                items: [...items],
+                grandTotal: grandTotal.toFixed(2)
+            };
+
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            history.unshift(billData);
+            if(history.length > 50) history.pop();
+            localStorage.setItem('quickBill_history', JSON.stringify(history));
+
+            let currentNo = parseInt(document.getElementById('billNoInput').value.replace('#','')) || billCounter;
+            billCounter = currentNo + 1;
+            localStorage.setItem('quickBill_currentNo', billCounter);
+            document.getElementById('billNoInput').value = '#' + billCounter;
+        }
+
+        function openPreviewModal() {
+            const invoiceClone = document.getElementById('invoice').cloneNode(true);
+            invoiceClone.style.margin = '0 auto';
+            document.getElementById('previewTarget').innerHTML = '';
+            document.getElementById('previewTarget').appendChild(invoiceClone);
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function triggerPrint() {
+            saveCurrentBillToHistory();
+            window.print();
+        }
+
+        function triggerPrintFromModal() {
+            closePreviewModal();
+            triggerPrint();
+        }
+
+        function openHistoryModal() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            
+            if(history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#718096; padding:15px;">Koi saved bill history nahi mili.</td></tr>`;
+            } else {
+                history.forEach((h, idx) => {
+                    const tr = document.createElement('tr');
+                    const itemListStr = h.items.map(i => `${i.name} (${i.qty} ${i.unit})`).join(', ');
+                    tr.innerHTML = `
+                        <td style="text-align:center;"><input type="checkbox" class="historyCheckbox" value="${idx}"></td>
+                        <td><strong>${h.billNo}</strong></td>
+                        <td>${h.custPhone || 'N/A'}</td>
+                        <td>${h.date} ${h.time}</td>
+                        <td>${itemListStr}</td>
+                        <td><strong>₹${h.grandTotal}</strong></td>
+                        <td style="text-align:center;">
+                            <button type="button" onclick="loadBillFromHistory(${idx})" style="background:#2b6cb0; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Load</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        function toggleSelectAllHistory(master) {
+            const checkboxes = document.querySelectorAll('.historyCheckbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        function moveToRecycleBinSelected() {
+            const checkboxes = document.querySelectorAll('.historyCheckbox:checked');
+            if(checkboxes.length === 0) {
+                alert('Kripya Recycle Bin mein bhejne ke liye kam se kam ek bill select karein!');
+                return;
+            }
+            if(confirm('Selected bills ko Recycle Bin mein bhejrein?')) {
+                let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+                let trash = JSON.parse(localStorage.getItem('quickBill_trash')) || [];
+
+                const indicesToRemove = Array.from(checkboxes).map(cb => parseInt(cb.value)).sort((a,b) => b - a);
+                indicesToRemove.forEach(i => {
+                    trash.unshift(history[i]);
+                    history.splice(i, 1);
+                });
+
+                localStorage.setItem('quickBill_history', JSON.stringify(history));
+                localStorage.setItem('quickBill_trash', JSON.stringify(trash));
+                openHistoryModal();
+            }
+        }
+
+        function openRecycleBinModal() {
+            const tbody = document.getElementById('recycleBinTableBody');
+            tbody.innerHTML = '';
+            let trash = JSON.parse(localStorage.getItem('quickBill_trash')) || [];
+
+            if(trash.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#718096; padding:15px;">Recycle Bin khali hai.</td></tr>`;
+            } else {
+                trash.forEach((h, idx) => {
+                    const tr = document.createElement('tr');
+                    const itemListStr = h.items.map(i => `${i.name} (${i.qty} ${i.unit})`).join(', ');
+                    tr.innerHTML = `
+                        <td><strong>${h.billNo}</strong></td>
+                        <td>${h.custPhone || 'N/A'}</td>
+                        <td>${h.date} ${h.time}</td>
+                        <td>${itemListStr}</td>
+                        <td><strong>₹${h.grandTotal}</strong></td>
+                        <td style="text-align:center; display:flex; gap:4px; justify-content:center;">
+                            <button type="button" onclick="restoreFromTrash(${idx})" style="background:#2f855a; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" title="Restore">🔄 Restore</button>
+                            <button type="button" onclick="deletePermanentlyFromTrash(${idx})" style="background:#e53e3e; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" title="Delete Permanently">❌ Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+            document.getElementById('recycleBinModal').style.display = 'flex';
+        }
+
+        function closeRecycleBinModal() {
+            document.getElementById('recycleBinModal').style.display = 'none';
+        }
+
+        function restoreFromTrash(index) {
+            let trash = JSON.parse(localStorage.getItem('quickBill_trash')) || [];
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+
+            if(trash[index]) {
+                history.unshift(trash[index]);
+                trash.splice(index, 1);
+                localStorage.setItem('quickBill_history', JSON.stringify(history));
+                localStorage.setItem('quickBill_trash', JSON.stringify(trash));
+                openRecycleBinModal();
+                openHistoryModal();
+            }
+        }
+
+        function deletePermanentlyFromTrash(index) {
+            if(confirm('Kya aap is bill ko HAMESHA ke liye delete karna chahte hain?')) {
+                let trash = JSON.parse(localStorage.getItem('quickBill_trash')) || [];
+                trash.splice(index, 1);
+                localStorage.setItem('quickBill_trash', JSON.stringify(trash));
+                openRecycleBinModal();
+            }
+        }
+
+        function emptyRecycleBin() {
+            let trash = JSON.parse(localStorage.getItem('quickBill_trash')) || [];
+            if(trash.length === 0) return;
+            if(confirm('Kya aap poora Recycle Bin khali karna chahte hain?')) {
+                localStorage.setItem('quickBill_trash', JSON.stringify([]));
+                openRecycleBinModal();
+            }
+        }
+
+        function loadBillFromHistory(index) {
+            let history = JSON.parse(localStorage.getItem('quickBill_history')) || [];
+            if(history[index]) {
+                const h = history[index];
+                items = h.items;
+                document.getElementById('billNoInput').value = h.billNo;
+                document.getElementById('custPhoneInput').value = h.custPhone === 'N/A' ? '' : (h.custPhone || '');
+                updateCustomerPhone();
+                renderBill();
+                closeHistoryModal();
+            }
+        }
+
+        window.onload = function() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB');
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            document.querySelectorAll('.billDate').forEach(el => el.innerText = dateStr);
+            document.querySelectorAll('.billTime').forEach(el => el.innerText = timeStr);
+            
+            document.getElementById('billNoInput').value = '#' + billCounter;
+            loadUnitOptions();
+            loadDefaultSettings();
+            loadWaApiKeys();
+            renderBill();
+        };
+    </script>
+</body>
+</html>
