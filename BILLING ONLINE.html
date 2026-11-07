@@ -1,4 +1,4 @@
-a<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
@@ -133,9 +133,10 @@ a<!DOCTYPE html>
     <div class="control-panel no-print">
         <div class="panel-header">
             <span>⚙️ Billing Control Panel & Cloud Sync Active</span>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <span id="draftStatusBadge" style="font-size: 11px; background: #feebc8; color: #c05621; padding: 3px 8px; border-radius: 4px; display: none; font-weight: bold;">💾 Draft Restored</span>
-                <button type="button" class="btn-newbill" onclick="startNewBillPrompt()">✨ + Naya Bill (New Party)</button>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="btn-draft" onclick="saveCurrentToDraftsList()" style="background:#d69e2e;">💾 Pause & Save Draft</button>
+                <button type="button" class="btn-history" onclick="openDraftsModal()" style="background:#319795;">📂 View Drafts (<span id="draftCountBadge">0</span>)</button>
+                <button type="button" class="btn-newbill" onclick="startFreshNewBill()">✨ + Naya Bill</button>
             </div>
         </div>
 
@@ -231,7 +232,7 @@ a<!DOCTYPE html>
         <div class="form-grid">
             <div class="form-group" style="flex: 1.3; min-width: 130px;">
                 <label for="custPhoneInput">Customer Phone No</label>
-                <input type="text" id="custPhoneInput" placeholder="E.g. 9700271634" onfocus="this.select()" oninput="updateCustomerPhone(); autoSaveDraft();" onkeydown="moveNext(event, 'itemName')">
+                <input type="text" id="custPhoneInput" placeholder="E.g. 9700271634" onfocus="this.select()" oninput="updateCustomerPhone()" onkeydown="moveNext(event, 'itemName')">
             </div>
             
             <div class="form-group" style="flex: 1.8; min-width: 150px;">
@@ -269,7 +270,6 @@ a<!DOCTYPE html>
         <div class="action-bar">
             <button type="button" class="btn-clear" onclick="clearBill()">🗑️ Reset Entire Bill</button>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="btn-draft" onclick="manualSaveDraft()">💾 Save Draft</button>
                 <button type="button" class="btn-whatsapp" onclick="sendWhatsAppDirectApi()">⚡ Direct Cloud WhatsApp</button>
                 <button type="button" class="btn-preview" onclick="openPreviewModal()">👁️ Preview Invoice</button>
                 <button type="button" class="btn-print" onclick="triggerPrint()">🖨️ Print Invoice</button>
@@ -279,6 +279,30 @@ a<!DOCTYPE html>
 
     <!-- Multi-Page Dynamic Wrapper -->
     <div id="printWrapper"></div>
+
+    <!-- DRAFTS MODAL -->
+    <div id="draftsModal" class="modal-overlay">
+        <div class="modal-card history-card">
+            <div class="modal-header">
+                <h3 style="margin:0; color:#1a365d;">📂 Saved Pending Drafts (Paused Bills)</h3>
+                <button type="button" onclick="closeDraftsModal()" style="background:#e53e3e; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto; width: 100%;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Customer Phone / Name</th>
+                            <th>Items Count</th>
+                            <th>Total Amount</th>
+                            <th>Saved Time</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="draftsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <!-- PREVIEW MODAL -->
     <div id="previewModal" class="modal-overlay">
@@ -362,6 +386,7 @@ a<!DOCTYPE html>
         let billCounter = 1;
         let customUnits = ['pcs', 'gms', 'lines'];
         let billHistory = [];
+        let savedDrafts = JSON.parse(localStorage.getItem('quickBill_savedDrafts')) || [];
         let recycleBin = JSON.parse(localStorage.getItem('quickBill_recycleBin')) || [];
         let itemMaster = {};
 
@@ -370,54 +395,119 @@ a<!DOCTYPE html>
             renderUnits();
             loadDefaultSettings();
             await fetchCloudData();
-            restoreDraftIfAvailable();
+            updateDraftsCountBadge();
             renderBill();
         };
 
-        function autoSaveDraft() {
-            const custPhone = document.getElementById('custPhoneInput').value;
-            const draftData = {
-                items: items,
-                custPhone: custPhone
-            };
-            localStorage.setItem('quickBill_activeDraft', JSON.stringify(draftData));
+        function updateDraftsCountBadge() {
+            document.getElementById('draftCountBadge').innerText = savedDrafts.length;
         }
 
-        function restoreDraftIfAvailable() {
-            const savedDraft = localStorage.getItem('quickBill_activeDraft');
-            if (savedDraft) {
-                try {
-                    const parsed = JSON.parse(savedDraft);
-                    if (parsed.items && parsed.items.length > 0) {
-                        items = parsed.items;
-                        if (parsed.custPhone) document.getElementById('custPhoneInput').value = parsed.custPhone;
-                        document.getElementById('draftStatusBadge').style.display = 'inline-block';
+        // Current bill ko draft list mein save karke screen naye bill ke liye khali karna
+        function saveCurrentToDraftsList() {
+            if (items.length === 0) {
+                alert("Current bill mein koi item nahi hai save karne ke liye!");
+                return;
+            }
+            const custPhone = document.getElementById('custPhoneInput').value.trim() || 'General Customer';
+            const subTotal = items.reduce((acc, curr) => acc + curr.total, 0);
+            const discAmt = parseFloat(document.getElementById('discountAmount')?.value) || 0;
+            const grandTotal = Math.max(0, subTotal - discAmt);
+
+            const draftRecord = {
+                id: Date.now(),
+                custPhone: custPhone,
+                itemsCount: items.length,
+                grandTotal: grandTotal.toFixed(2),
+                dateTime: new Date().toLocaleString(),
+                items: [...items]
+            };
+
+            savedDrafts.unshift(draftRecord);
+            localStorage.setItem('quickBill_savedDrafts', JSON.stringify(savedDrafts));
+            updateDraftsCountBadge();
+
+            // Screen clear for new bill
+            items = [];
+            document.getElementById('custPhoneInput').value = '';
+            renderBill();
+            alert("✅ Bill successfully Draft mein save ho gaya! Ab aap naya bill bana sakte hain.");
+        }
+
+        function openDraftsModal() {
+            renderDraftsTable();
+            document.getElementById('draftsModal').style.display = 'flex';
+        }
+
+        function closeDraftsModal() {
+            document.getElementById('draftsModal').style.display = 'none';
+        }
+
+        function renderDraftsTable() {
+            const tbody = document.getElementById('draftsTableBody');
+            tbody.innerHTML = '';
+            if (savedDrafts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#718096;">Koi paused draft bill nahi hai.</td></tr>`;
+                return;
+            }
+            savedDrafts.forEach(draft => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${draft.custPhone}</b></td>
+                    <td>${draft.itemsCount} items</td>
+                    <td><b>₹${draft.grandTotal}</b></td>
+                    <td>${draft.dateTime}</td>
+                    <td style="text-align: center; display: flex; gap: 6px; justify-content: center;">
+                        <button style="background:#2b6cb0; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="resumeDraft(${draft.id})">Resume</button>
+                        <button style="background:#e53e3e; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="deleteDraft(${draft.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function resumeDraft(id) {
+            const draft = savedDrafts.find(d => d.id === id);
+            if (draft) {
+                if (items.length > 0) {
+                    if (!confirm("Aapke current screen par bhi items hain. Kya aap current bill ko pehle draft mein save karke ye wala draft kholna chahte hain?")) {
+                        return;
                     }
-                } catch(e) { console.error(e); }
+                    saveCurrentToDraftsList();
+                }
+                items = [...draft.items];
+                document.getElementById('custPhoneInput').value = draft.custPhone !== 'General Customer' ? draft.custPhone : '';
+                
+                // Remove from drafts list
+                savedDrafts = savedDrafts.filter(d => d.id !== id);
+                localStorage.setItem('quickBill_savedDrafts', JSON.stringify(savedDrafts));
+                updateDraftsCountBadge();
+
+                renderBill();
+                closeDraftsModal();
+                alert("📂 Draft bill wapas load ho gaya hai!");
             }
         }
 
-        function clearDraftStorage() {
-            localStorage.removeItem('quickBill_activeDraft');
-            document.getElementById('draftStatusBadge').style.display = 'none';
+        function deleteDraft(id) {
+            if (confirm("Kya aap is draft ko permanently delete karna chahte hain?")) {
+                savedDrafts = savedDrafts.filter(d => d.id !== id);
+                localStorage.setItem('quickBill_savedDrafts', JSON.stringify(savedDrafts));
+                updateDraftsCountBadge();
+                renderDraftsTable();
+            }
         }
 
-        function manualSaveDraft() {
-            autoSaveDraft();
-            alert("✅ Bill draft safe ho chuka hai!");
-        }
-
-        function startNewBillPrompt() {
+        function startFreshNewBill() {
             if (items.length > 0) {
-                if (!confirm("Aapke current bill mein items hain. Kya aap ise clear karke naya bill shuru karna chahte hain? (Pehle print ya save zaroor kar lein)")) {
+                if (confirm("Kya aap current bill ko Draft mein save karke naya bill shuru karna chahte hain?")) {
+                    saveCurrentToDraftsList();
                     return;
                 }
             }
             items = [];
             document.getElementById('custPhoneInput').value = '';
-            clearDraftStorage();
             renderBill();
-            alert("✨ Naya bill shuru ho gaya hai!");
         }
 
         async function fetchCloudData() {
@@ -639,7 +729,6 @@ a<!DOCTYPE html>
             document.getElementById('itemSuggestions').style.display = 'none';
             document.getElementById('itemName').focus();
             
-            autoSaveDraft();
             renderBill();
         }
 
@@ -863,7 +952,6 @@ a<!DOCTYPE html>
 
         function deleteItem(id) {
             items = items.filter(i => i.id !== id);
-            autoSaveDraft();
             renderBill();
         }
 
@@ -871,7 +959,6 @@ a<!DOCTYPE html>
             if (confirm("Are you sure you want to reset the current bill?")) {
                 items = [];
                 document.getElementById('custPhoneInput').value = '';
-                clearDraftStorage();
                 renderBill();
             }
         }
@@ -911,9 +998,8 @@ a<!DOCTYPE html>
                 return;
             }
             saveCurrentBillToHistory();
-            clearDraftStorage();
             
-            // Print ke baad automatic naya bill ready kar dega
+            // Print ke baad screen fresh naye bill ke liye khali ho jayegi
             items = [];
             document.getElementById('custPhoneInput').value = '';
             renderBill();
@@ -1003,7 +1089,6 @@ a<!DOCTYPE html>
                 items = [...bill.items];
                 document.getElementById('custPhoneInput').value = bill.custPhone !== 'N/A' ? bill.custPhone : '';
                 document.getElementById('billNoInput').value = bill.billNo;
-                autoSaveDraft();
                 renderBill();
                 closeHistoryModal();
             }
