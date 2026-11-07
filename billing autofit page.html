@@ -295,7 +295,7 @@
                 <button type="button" onclick="closeRecycleBinModal()" style="background:#718096; color:white; border:none; padding:6px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">✕ Close</button>
             </div>
             <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                <span style="font-size: 12px; color: #718096;">Jab tak aap yahan से delete nahi करेंगे, bills yahan mehfooz rahenge.</span>
+                <span style="font-size: 12px; color: #718096;">Jab tak aap yahan se delete nahi karenge, bills yahan mehfooz rahenge.</span>
                 <button type="button" style="background:#9b2c2c; color:white; border:none; padding: 8px 14px; font-weight:600; border-radius:4px; cursor:pointer;" onclick="emptyRecycleBin()">💥 Empty Entire Recycle Bin</button>
             </div>
             <div style="max-height: 400px; overflow-y: auto; width: 100%;">
@@ -460,7 +460,7 @@
             }
         }
 
-        // Smart Render Logic with Completely Hidden Zero-Discount Print Output
+        // Smart Render Logic with Completely Hidden Zero-Discount & no-print button
         function renderBill() {
             const printWrapper = document.getElementById('printWrapper');
             printWrapper.innerHTML = '';
@@ -565,7 +565,7 @@
                         </div>
                         ${discAmt <= 0 ? `
                         <div class="no-print" style="text-align: right; margin-top: 4px;">
-                            <button type="button" onclick="toggleDiscountInput()" style="font-size: 10px; background: #e2e8f0; border: none; padding: 2px 6px; cursor: pointer; border-radius: 3px;">+ Add Discount</button>
+                            <button type="button" class="no-print" onclick="toggleDiscountInput()" style="font-size: 10px; background: #e2e8f0; border: none; padding: 2px 6px; cursor: pointer; border-radius: 3px;">+ Add Discount</button>
                         </div>
                         ` : ''}
                         ` : `<div style="text-align: right; font-size: 10px; font-style: italic; color: #555; margin-top: 5px;">(Continued on Next Page...)</div>`}
@@ -606,7 +606,6 @@
                 row.style.display = 'flex';
                 let input = document.getElementById('discountAmount');
                 if(!input) {
-                    // Create if missing
                     renderBill();
                     input = document.getElementById('discountAmount');
                 }
